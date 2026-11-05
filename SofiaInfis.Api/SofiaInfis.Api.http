@@ -1,0 +1,6 @@
+@SofiaInfis.Api_HostAddress = http://localhost:5151
+
+GET {{SofiaInfis.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/Itens de Solução/">
+    <File Path="docker-compose.yml" />
+  </Folder>
+  <Project Path="SofiaInfis.Api/SofiaInfis.Api.csproj" />
+</Solution>

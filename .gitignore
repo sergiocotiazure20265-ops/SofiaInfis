@@ -1,0 +1,28 @@
+# IDEs and generated .NET files
+.vs/
+.vscode/
+.idea/
+**/bin/
+**/obj/
+*.user
+*.suo
+TestResults/
+*.log
+
+# Local configuration and credentials (publish sanitized examples instead)
+SofiaInfis.Api/appsettings.json
+SofiaInfis.Api/appsettings.*.json
+!SofiaInfis.Api/appsettings.example.json
+docker-compose.yml
+docker-compose.override.yml
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.pem
+
+# Local documents and exports
+uploads/
+artifacts/
+*.zip

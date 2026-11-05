@@ -1,0 +1,145 @@
+name: sofia-infis
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bd-sofia-infis
+      POSTGRES_USER: infis
+      POSTGRES_PASSWORD: ${SOFIA_POSTGRES_PASSWORD:?Defina SOFIA_POSTGRES_PASSWORD no .env}
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sofia_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  pgadmin:
+    image: dpage/pgadmin4:9.19
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: infis@infis.com
+      PGADMIN_DEFAULT_PASSWORD: ${SOFIA_PGADMIN_PASSWORD:?Defina SOFIA_PGADMIN_PASSWORD no .env}
+    ports:
+      - "5052:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - sofia_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - /venv/bin/python3
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:80/misc/ping', timeout=5)"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  mongodb:
+    image: mongo:8.0
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: infis
+      MONGO_INITDB_ROOT_PASSWORD: ${SOFIA_MONGODB_PASSWORD:?Defina SOFIA_MONGODB_PASSWORD no .env}
+      MONGO_INITDB_DATABASE: bd-sofia-infis-historico
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - sofia_network
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          mongosh --quiet --host 127.0.0.1
+          --username "$${MONGO_INITDB_ROOT_USERNAME}"
+          --password "$${MONGO_INITDB_ROOT_PASSWORD}"
+          --authenticationDatabase admin
+          --eval 'quit(db.adminCommand({ping: 1}).ok ? 0 : 1)'
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+
+  mongo-express:
+    image: mongo-express:1.0.2
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://infis:${SOFIA_MONGODB_PASSWORD:?Defina SOFIA_MONGODB_PASSWORD no .env}@mongodb:27017/?authSource=admin
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      ME_CONFIG_BASICAUTH: "true"
+      ME_CONFIG_BASICAUTH_ENABLED: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: infis
+      ME_CONFIG_BASICAUTH_PASSWORD: ${SOFIA_MONGOEXPRESS_PASSWORD:?Defina SOFIA_MONGOEXPRESS_PASSWORD no .env}
+    ports:
+      - "5053:8081"
+    networks:
+      - sofia_network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          const http = require('http');
+          const req = http.get({host:'127.0.0.1', port:8081, path:'/',
+          auth:process.env.ME_CONFIG_BASICAUTH_USERNAME + ':' + process.env.ME_CONFIG_BASICAUTH_PASSWORD},
+          res => {res.resume(); process.exit(res.statusCode === 200 ? 0 : 1);});
+          req.on('error', () => process.exit(1));
+          req.setTimeout(5000, () => {req.destroy(); process.exit(1);});
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SOFIA_SQLSERVER_PASSWORD:?Defina SOFIA_SQLSERVER_PASSWORD no .env}
+    ports:
+      - "1434:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - sofia_network
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa
+          -P "$${MSSQL_SA_PASSWORD}" -C -Q "SELECT 1" -b -l 5
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+  mongodb_data:
+  mongodb_config:
+  sqlserver_data:
+
+networks:
+  sofia_network:
+    driver: bridge
