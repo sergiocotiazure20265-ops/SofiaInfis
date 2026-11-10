@@ -1,0 +1,976 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SOFIA — operações aditivas de orquestração",
+    "version": "1.0.0",
+    "description": "Contrato planejado, ainda não implementado. API HTTP local, não servidor A2A. Novos endpoints protegidos sem modificar legados."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5151",
+      "description": "Desenvolvimento local isolado."
+    }
+  ],
+  "paths": {
+    "/api/v1/agentes": {
+      "get": {
+        "operationId": "descobrirAgentes",
+        "summary": "Descobrir agentes autorizados e suas capacidades.",
+        "security": [
+          {
+            "SofiaA2AService": []
+          }
+        ],
+        "x-required-permission": "a2a:agents:read",
+        "responses": {
+          "200": {
+            "description": "Lista sanitizada; falhas de descoberta por agente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaAgentes"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credencial ausente ou inválida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Bearer"
+              }
+            }
+          },
+          "403": {
+            "description": "Chamador sem permissão.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Módulo desativado ou infraestrutura indisponível.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orquestracoes": {
+      "post": {
+        "operationId": "criarOrquestracao",
+        "summary": "Aceitar nova execução com documentos textuais.",
+        "security": [
+          {
+            "SofiaA2AService": []
+          }
+        ],
+        "x-required-permission": "a2a:execute",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarOrquestracao"
+              },
+              "example": {
+                "usuario": {
+                  "nome": "Pessoa de Teste"
+                },
+                "pergunta": "Verifique divergências fiscais nos documentos.",
+                "documentos": [
+                  {
+                    "idDocumento": "doc-001",
+                    "nome": "nota-teste.txt",
+                    "tipo": "text/plain",
+                    "texto": "Documento sintético: valor total 100,00; pagamento 90,00."
+                  },
+                  {
+                    "idDocumento": "doc-002",
+                    "nome": "pedido-teste.txt",
+                    "tipo": "text/plain",
+                    "texto": "Pedido sintético: valor acordado 100,00."
+                  }
+                ],
+                "capacidades": [
+                  "analisar_documentos"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Registro confirmado e trabalho aceito na fila.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Aceite"
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URI relativa da consulta.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credencial ausente ou inválida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Bearer"
+              }
+            }
+          },
+          "403": {
+            "description": "Chamador sem permissão.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Corpo ou envelope de envio acima de 1 MiB.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Capacidade limitada de execução/fila esgotada.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Módulo desativado ou infraestrutura indisponível.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orquestracoes/{idExecucao}": {
+      "get": {
+        "operationId": "consultarExecucao",
+        "summary": "Consultar estado e página de resumos sem refazer análises.",
+        "security": [
+          {
+            "SofiaA2AService": []
+          }
+        ],
+        "x-required-permission": "a2a:read",
+        "parameters": [
+          {
+            "name": "idExecucao",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Execução do proprietário e chamadas persistidas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Execucao"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credencial ausente ou inválida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Bearer"
+              }
+            }
+          },
+          "403": {
+            "description": "Chamador sem permissão.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Registro inexistente, alheio ou expirado.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Módulo desativado ou infraestrutura indisponível.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orquestracoes/{idExecucao}/cancelar": {
+      "post": {
+        "operationId": "cancelarExecucao",
+        "summary": "Cancelar localmente, preservando resultados já concluídos.",
+        "security": [
+          {
+            "SofiaA2AService": []
+          }
+        ],
+        "x-required-permission": "a2a:cancel",
+        "parameters": [
+          {
+            "name": "idExecucao",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado salvo; cancelamento remoto é best effort. Terminal prévio permanece.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cancelamento"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credencial ausente ou inválida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Bearer"
+              }
+            }
+          },
+          "403": {
+            "description": "Chamador sem permissão.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Registro inexistente, alheio ou expirado.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Módulo desativado ou infraestrutura indisponível.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orquestracoes/{idExecucao}/chamadas/{idSolicitacao}/resultado": {
+      "get": {
+        "operationId": "consultarResultadoOriginal",
+        "summary": "Obter análise original estruturada de uma chamada.",
+        "security": [
+          {
+            "SofiaA2AService": []
+          }
+        ],
+        "x-required-permission": "a2a:read",
+        "parameters": [
+          {
+            "name": "idExecucao",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "idSolicitacao",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado de negócio validado, inclusive parcial ou erro.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./sofia-v1.schema.json#/$defs/ResultadoAnaliseSofia"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credencial ausente ou inválida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Bearer"
+              }
+            }
+          },
+          "403": {
+            "description": "Chamador sem permissão.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Registro inexistente, alheio ou expirado.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Resultado não disponível; consultar resumo da chamada.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Módulo desativado ou infraestrutura indisponível.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SofiaA2AService": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token opaco de serviço; não JWT. Permissões/owner por clientId autenticado."
+      }
+    },
+    "schemas": {
+      "CriarOrquestracao": {
+        "type": "object",
+        "required": [
+          "usuario",
+          "pergunta",
+          "documentos",
+          "capacidades"
+        ],
+        "properties": {
+          "usuario": {
+            "$ref": "./sofia-v1.schema.json#/$defs/Usuario"
+          },
+          "pergunta": {
+            "type": "string",
+            "minLength": 5,
+            "pattern": "\\S",
+            "maxLength": 2000
+          },
+          "documentos": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "./sofia-v1.schema.json#/$defs/Documento"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "textoCompleto": {
+                      "type": "boolean",
+                      "const": true,
+                      "default": true
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "capacidades": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "Aceite": {
+        "type": "object",
+        "required": [
+          "idExecucao",
+          "estado",
+          "criadoEm",
+          "registroConfirmado"
+        ],
+        "properties": {
+          "idExecucao": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "estado": {
+            "const": "em_andamento"
+          },
+          "criadoEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "registroConfirmado": {
+            "const": true
+          },
+          "linkConsulta": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "additionalProperties": true
+      },
+      "Falha": {
+        "type": "object",
+        "required": [
+          "categoria",
+          "codigo",
+          "mensagem"
+        ],
+        "properties": {
+          "categoria": {
+            "type": "string",
+            "enum": [
+              "conexao",
+              "autenticacao",
+              "autorizacao",
+              "protocolo",
+              "validacao",
+              "correlacao",
+              "timeout",
+              "cancelamento",
+              "interrupcao",
+              "armazenamento",
+              "capacidade",
+              "descoberta"
+            ]
+          },
+          "codigo": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "mensagem": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "additionalProperties": true
+      },
+      "Consumo": {
+        "type": "object",
+        "required": [],
+        "properties": {
+          "tokensEntrada": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "tokensSaida": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "tokensTotal": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "custoValor": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "custoMoeda": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "origem": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true
+      },
+      "ResumoChamada": {
+        "type": "object",
+        "required": [
+          "idSolicitacao",
+          "idAgente",
+          "estado",
+          "resultadoDisponivel"
+        ],
+        "properties": {
+          "idSolicitacao": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "idAgente": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "aguardando",
+              "em_andamento",
+              "concluida",
+              "falhou",
+              "timeout",
+              "cancelada",
+              "interrompida"
+            ]
+          },
+          "statusResultado": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "concluido",
+              "parcial",
+              "erro",
+              null
+            ]
+          },
+          "resultadoDisponivel": {
+            "type": "boolean"
+          },
+          "linkResultado": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "falhaTecnica": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Falha"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "duracaoMs": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "consumo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Consumo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": true
+      },
+      "Execucao": {
+        "type": "object",
+        "required": [
+          "idExecucao",
+          "estado",
+          "criadoEm",
+          "capacidadesSolicitadas",
+          "capacidadesSemCobertura",
+          "chamadas"
+        ],
+        "properties": {
+          "idExecucao": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "em_andamento",
+              "concluida",
+              "parcial",
+              "falhou",
+              "cancelada",
+              "interrompida"
+            ]
+          },
+          "criadoEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "encerradoEm": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "capacidadesSolicitadas": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "capacidadesSemCobertura": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "chamadas": {
+            "type": "object",
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ResumoChamada"
+                }
+              },
+              "cursorProximo": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": true
+          },
+          "registroConfirmado": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": true
+      },
+      "Cancelamento": {
+        "type": "object",
+        "required": [
+          "idExecucao",
+          "estado",
+          "registroConfirmado"
+        ],
+        "properties": {
+          "idExecucao": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "em_andamento",
+              "concluida",
+              "parcial",
+              "falhou",
+              "cancelada",
+              "interrompida"
+            ]
+          },
+          "registroConfirmado": {
+            "const": true
+          }
+        },
+        "additionalProperties": true
+      },
+      "Agente": {
+        "type": "object",
+        "required": [
+          "idAgente",
+          "nome",
+          "capacidades",
+          "elegivel"
+        ],
+        "properties": {
+          "idAgente": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "nome": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "capacidades": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "elegivel": {
+            "type": "boolean"
+          },
+          "motivo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true
+      },
+      "ListaAgentes": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Agente"
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "Problema": {
+        "type": "object",
+        "required": [
+          "status",
+          "title",
+          "codigo",
+          "traceId"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 400,
+            "maximum": 599
+          },
+          "detail": {
+            "type": "string"
+          },
+          "codigo": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "traceId": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "idExecucao": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

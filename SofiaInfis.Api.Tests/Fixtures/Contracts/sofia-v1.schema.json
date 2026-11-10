@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:infis:sofia:contrato:1.0",
+  "title": "Contrato SOFIA 1.0 — perfil de análise documental",
+  "description": "Contrato de negócio; não valida correlação externa, duplicidade de propriedade JSON ou tamanho do envelope A2A.",
+  "$defs": {
+    "Usuario": {
+      "type": "object",
+      "required": [
+        "nome"
+      ],
+      "properties": {
+        "nome": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "maxLength": 200
+        }
+      },
+      "additionalProperties": true
+    },
+    "Documento": {
+      "type": "object",
+      "required": [
+        "idDocumento",
+        "nome",
+        "texto"
+      ],
+      "properties": {
+        "idDocumento": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "nome": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "tipo": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "texto": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "maxLength": 20000
+        }
+      },
+      "additionalProperties": true
+    },
+    "Contexto": {
+      "type": "object",
+      "required": [],
+      "properties": {
+        "idioma": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "instrucoes": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Agente": {
+      "type": "object",
+      "required": [
+        "idAgente",
+        "nome"
+      ],
+      "properties": {
+        "idAgente": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "nome": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Erro": {
+      "type": "object",
+      "required": [
+        "codigo",
+        "mensagem"
+      ],
+      "properties": {
+        "codigo": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "mensagem": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Achado": {
+      "type": "object",
+      "required": [
+        "idAchado",
+        "descricao",
+        "idDocumentos",
+        "evidencias"
+      ],
+      "properties": {
+        "idAchado": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "descricao": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "idDocumentos": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "evidencias": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "severidade": {
+          "type": "string",
+          "enum": [
+            "baixa",
+            "media",
+            "alta",
+            "critica"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "SolicitacaoAnaliseSofia": {
+      "type": "object",
+      "required": [
+        "versaoContrato",
+        "idExecucao",
+        "idSolicitacao",
+        "usuario",
+        "pergunta",
+        "documentos"
+      ],
+      "properties": {
+        "versaoContrato": {
+          "const": "1.0"
+        },
+        "idExecucao": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "idSolicitacao": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "usuario": {
+          "$ref": "#/$defs/Usuario"
+        },
+        "pergunta": {
+          "type": "string",
+          "minLength": 5,
+          "pattern": "\\S",
+          "maxLength": 2000
+        },
+        "documentos": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/Documento"
+          }
+        },
+        "contexto": {
+          "$ref": "#/$defs/Contexto"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ResultadoAnaliseSofia": {
+      "type": "object",
+      "required": [
+        "versaoContrato",
+        "idExecucao",
+        "idSolicitacao",
+        "agente",
+        "status",
+        "analise",
+        "achados"
+      ],
+      "properties": {
+        "versaoContrato": {
+          "const": "1.0"
+        },
+        "idExecucao": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "idSolicitacao": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "agente": {
+          "$ref": "#/$defs/Agente"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "concluido",
+            "parcial",
+            "erro"
+          ]
+        },
+        "analise": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "achados": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Achado"
+          }
+        },
+        "observacoes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "erro": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Erro"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "erro"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "erro"
+            ],
+            "properties": {
+              "erro": {
+                "$ref": "#/$defs/Erro"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

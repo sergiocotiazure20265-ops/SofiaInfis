@@ -1,0 +1,84 @@
+@page "/"
+
+@rendermode InteractiveServer
+@inject ISofiaChat Sofia
+@inject IJSRuntime JS
+<PageTitle>SOFIA · Inteligência fiscal, em boa companhia</PageTitle>
+@if (_inChat)
+{
+    <ChatPanel UserName="@_name.Trim()" OnLeave="LeaveChat" />
+}
+else
+{
+<div class="landing" inert="@_identify">
+    <header class="site-header wrap">
+        <a href="/" class="brand-link"><Brand /></a>
+        <nav aria-label="Navegação principal"><a href="#como-funciona">Como funciona</a><a href="/conhecimentos">Base de conhecimentos</a></nav>
+        <button class="button button-outline header-cta" @onclick="OpenIdentity">Conversar com a SOFIA <UiIcon Name="arrow" Size="17" /></button>
+    </header>
+    <main>
+        <section class="hero wrap" aria-labelledby="hero-title">
+            <div class="hero-copy">
+                <span class="eyebrow"><span class="status-dot"></span> INTELIGÊNCIA ARTIFICIAL. PROXIMIDADE REAL.</span>
+                <h1 id="hero-title">Sua próxima<br />boa decisão<br />começa com<br /><span>uma conversa.</span></h1>
+                <p>Conheça a SOFIA. A inteligência fiscal da INFIS que conecta documentos, conhecimento e respostas para você seguir com mais clareza.</p>
+                <button class="button button-orange hero-cta" @onclick="OpenIdentity">Olá, SOFIA. Vamos conversar? <UiIcon Name="arrow" /></button>
+                <span class="hero-caption"><UiIcon Name="shield" Size="15" /> Inteligência que analisa. Uma parceira que explica.</span>
+            </div>
+            <div class="hero-visual">
+                <img src="images/sofia-welcome.png" alt="SOFIA, assistente virtual da INFIS, recebendo você com um tablet e a mão estendida." fetchpriority="high" />
+                <div class="hero-note"><span class="note-icon"><UiIcon Name="sparkles" /></span><div><strong>Prazer, eu sou a SOFIA.</strong><span>Vamos transformar informação em direção?</span></div></div>
+                <span class="visual-caption">TECNOLOGIA INFIS. FEITA PARA ESTAR AO SEU LADO.</span>
+            </div>
+        </section>
+        <section class="intro-strip wrap" id="especialistas">
+            <p>Vários olhares.<br /><strong>Uma visão mais completa.</strong></p>
+            <div><UiIcon Name="file" /><span>Análise documental</span></div><div><UiIcon Name="layers" /><span>Base de conhecimentos</span></div><div><UiIcon Name="trace" /><span>Clareza em cada etapa</span></div>
+        </section>
+        <section class="how-section wrap" id="como-funciona">
+            <div class="section-heading"><div><span class="eyebrow text-orange">SIMPLES DO PRIMEIRO OLÁ À RESPOSTA</span><h2>Você pergunta.<br />A inteligência se conecta.</h2></div><p>Menos complexidade para você.<br />Mais contexto para cada decisão.</p></div>
+            <div class="steps-grid">
+                <article><span class="step-number">01</span><UiIcon Name="chat" Size="27" /><h3>Comece uma conversa</h3><p>Diga seu nome e conte o que precisa entender. A SOFIA ajuda a encontrar o caminho.</p></article>
+                <article><span class="step-number">02</span><UiIcon Name="attach" Size="27" /><h3>Traga seus documentos</h3><p>Selecione ou arraste arquivos PDF, TXT e XML. A SOFIA analisa os documentos junto à sua pergunta.</p></article>
+                <article><span class="step-number">03</span><UiIcon Name="sparkles" Size="27" /><h3>Enxergue o todo</h3><p>Consulte cada análise, reúna as conclusões e acompanhe as etapas, no seu ritmo.</p></article>
+            </div>
+        </section>
+        <section class="closing-section wrap"><div><span class="eyebrow text-orange">SUA PARCEIRA EM INTELIGÊNCIA FISCAL</span><h2>Vamos olhar para isso juntos?</h2><p>Uma pergunta é um bom começo.</p></div><button class="button button-dark" @onclick="OpenIdentity">Iniciar minha conversa <UiIcon Name="arrow" /></button></section>
+    </main>
+    <footer class="site-footer wrap"><Brand ShowSofia="false" /><span>Inteligência fiscal. Relações humanas.</span><small>SOFIA © @DateTime.Now.Year INFIS</small></footer>
+</div>
+}
+@if (_identify)
+{
+    <div class="modal-backdrop" @onclick="CloseIdentity">
+        <section class="identity-modal" role="dialog" aria-modal="true" aria-labelledby="identity-title" @ref="_dialog" @onclick:stopPropagation="true" @onkeydown="IdentityKey">
+            <button class="icon-button modal-close" aria-label="Fechar identificação" @onclick="CloseIdentity"><UiIcon Name="x" /></button>
+            <div class="sofia-avatar identity-avatar"><img src="images/sofia-welcome.png" alt="" /></div>
+            <span class="eyebrow text-orange">ANTES DO NOSSO PRIMEIRO OLÁ</span><h2 id="identity-title">Como posso chamar você?</h2><p>Vamos deixar nossa conversa mais próxima.</p>
+            <form @onsubmit="StartChat" @onsubmit:preventDefault="true"><label for="user-name">Seu nome</label><input @ref="_nameInput" id="user-name" @bind="_name" @bind:event="oninput" placeholder="Digite seu nome" autocomplete="given-name" maxlength="200" required /><button class="button button-orange" type="submit" disabled="@string.IsNullOrWhiteSpace(_name)">Entrar na conversa <UiIcon Name="arrow" /></button></form>
+            <small><UiIcon Name="user" Size="14" /> Seu nome identifica a conversa e contextualiza as análises.</small>
+            @if (Sofia.IsDemo) { <span class="demo-note">Modo demonstração · respostas simuladas</span> }
+        </section>
+    </div>
+}
+@code {
+    private string _name = "";
+    private bool _identify, _inChat, _focusName;
+    private ElementReference _nameInput, _dialog;
+    private IJSObjectReference? _dialogModule;
+    private void OpenIdentity() { _identify = true; _focusName = true; }
+    private void CloseIdentity() => _identify = false;
+    private void IdentityKey(KeyboardEventArgs e) { if (e.Key == "Escape") CloseIdentity(); }
+    private void StartChat() { if (!string.IsNullOrWhiteSpace(_name)) { _identify = false; _inChat = true; } }
+    private void LeaveChat() => _inChat = false;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusName)
+        {
+            _focusName = false;
+            _dialogModule ??= await JS.InvokeAsync<IJSObjectReference>("import", "./chat.js");
+            await _dialogModule.InvokeVoidAsync("focusDialog", _dialog);
+            await _nameInput.FocusAsync();
+        }
+    }
+}

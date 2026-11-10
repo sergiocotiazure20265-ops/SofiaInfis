@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+    "profiles": {
+      "http": {
+        "commandName": "Project",
+        "dotnetRunMessages": true,
+        "launchBrowser": false,
+        "applicationUrl": "http://localhost:5275",
+        "environmentVariables": {
+          "ASPNETCORE_ENVIRONMENT": "Development"
+        }
+      },
+      "demo": {
+        "commandName": "Project",
+        "launchBrowser": false,
+        "applicationUrl": "http://localhost:5275",
+        "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development", "Sofia__DemoMode": "true" }
+      }
+    }
+  }

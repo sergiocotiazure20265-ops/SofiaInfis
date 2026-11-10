@@ -1,0 +1,2 @@
+Documento inteiramente sintético para validar o anexo de arquivos na interface.
+Não representa cliente, operação fiscal ou análise real.

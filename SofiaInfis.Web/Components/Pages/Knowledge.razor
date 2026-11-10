@@ -1,0 +1,75 @@
+@page "/conhecimentos"
+@rendermode InteractiveServer
+@inject LiveSofiaChat Gateway
+@implements IDisposable
+<PageTitle>Base de conhecimentos · SOFIA</PageTitle>
+<main class="knowledge-page wrap">
+    <a class="brand-link" href="/"><Brand /></a>
+    <h1>Base de conhecimentos</h1>
+    <p>Adicione referências autorizadas para a SOFIA consultar nas próximas perguntas.</p>
+    <p>Anexos do chat são usados apenas naquela pergunta. Para guardar uma referência na base, registre-a aqui.</p>
+    <form @onsubmit="Save" @onsubmit:preventDefault="true" class="knowledge-form">
+        <label for="knowledge-title">Título da referência</label>
+        <input id="knowledge-title" @bind="title" minlength="5" maxlength="200" required disabled="@busy" />
+        <label for="knowledge-source">Fonte ou origem</label>
+        <input id="knowledge-source" @bind="source" minlength="3" maxlength="500" required disabled="@busy" />
+        <label for="knowledge-file">Documento PDF, TXT ou XML (opcional)</label>
+        <InputFile id="knowledge-file" OnChange="SelectFile" accept=".pdf,.txt,.xml" disabled="@busy" @key="fileKey" />
+        <small>Até 5 MB e 20.000 caracteres extraídos. Arquivos maiores devem ser divididos.</small>
+        @if (file is not null)
+        {
+            <p>@file.Name · @file.SizeLabel <button type="button" class="quiet-button" @onclick="RemoveFile" disabled="@busy">Remover</button></p>
+        }
+        else
+        {
+            <label for="knowledge-text">Texto da referência</label>
+            <textarea id="knowledge-text" @bind="text" rows="10" minlength="20" maxlength="100000" required disabled="@busy"></textarea>
+        }
+        <button class="button button-orange" type="submit" disabled="@(busy || reading)">@(busy ? "Registrando conhecimento…" : "Adicionar à base")</button>
+    </form>
+    @if (notice is not null) { <p role="status" class="knowledge-notice">@notice</p> }
+    <a href="/">Voltar à conversa</a>
+</main>
+@code {
+    private string title = "", source = "", text = "";
+    private string? notice;
+    private ChatFile? file;
+    private bool busy, reading;
+    private int fileKey;
+    private readonly CancellationTokenSource lifetime = new();
+    private void RemoveFile() { file = null; fileKey++; }
+    private async Task SelectFile(InputFileChangeEventArgs args)
+    {
+        reading = true; notice = null; file = null;
+        try
+        {
+            var selected = args.File;
+            await using var input = selected.OpenReadStream(DocumentPreparation.MaxFileBytes, lifetime.Token);
+            using var output = new MemoryStream();
+            await input.CopyToAsync(output, lifetime.Token);
+            var candidate = new ChatFile(Path.GetFileName(selected.Name.Replace('\\', '/')), output.ToArray());
+            DocumentPreparation.Validate([candidate]); file = candidate;
+        }
+        catch (OperationCanceledException) { }
+        catch { notice = "Não foi possível ler o arquivo. Use PDF, TXT ou XML de até 5 MB."; fileKey++; }
+        finally { reading = false; }
+    }
+    private async Task Save()
+    {
+        if (busy || reading) return;
+        if (title.Trim().Length is < 5 or > 200 || source.Trim().Length is < 3 or > 500 || (file is null && text.Trim().Length is < 20 or > 100000))
+        { notice = "Confira o título, a fonte e o conteúdo da referência."; return; }
+        busy = true; notice = null;
+        try
+        {
+            var result = await Gateway.IngestKnowledgeAsync(title.Trim(), source.Trim(), text.Trim(), file, lifetime.Token);
+            notice = $"Referência adicionada: {result.titulo}. {result.totalChunks} trecho(s) disponíveis para consulta.";
+            title = source = text = ""; RemoveFile();
+        }
+        catch (SofiaUiException ex) { notice = ex.Message; }
+        catch (OperationCanceledException) { notice = "O registro foi interrompido. Confira a base antes de tentar novamente."; }
+        catch { notice = "Não foi possível registrar a referência. Tente novamente."; }
+        finally { busy = false; }
+    }
+    public void Dispose() { lifetime.Cancel(); lifetime.Dispose(); }
+}

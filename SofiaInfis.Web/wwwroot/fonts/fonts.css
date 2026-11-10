@@ -1,0 +1,4 @@
+/* Uses the locally installed Segoe UI family. No third-party font requests. */
+@font-face{font-family:'Sofia Sans';src:local('Segoe UI');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:'Sofia Sans';src:local('Segoe UI Semibold');font-style:normal;font-weight:550 650;font-display:swap}
+@font-face{font-family:'Sofia Sans';src:local('Segoe UI Bold');font-style:normal;font-weight:700 900;font-display:swap}

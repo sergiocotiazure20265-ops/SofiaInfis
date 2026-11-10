@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: sofia-infis
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./SofiaInfis.Web/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: "off"
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_HTTP_PORTS
+        value: "8080"
+      - key: PORT
+        value: "8080"
+      - key: Sofia__EmbeddedApi
+        value: "true"
+      - key: Sofia__ApiBaseUrl
+        value: http://localhost:8080/
+      - key: Sofia__UseSpecialistAgents
+        value: "false"
+      - key: Sofia__DemoMode
+        value: "false"
+      - key: A2A__Enabled
+        value: "false"
+      - key: Rag__InitializeDatabase
+        value: "false"
+      - key: Deployment__RequireAccessKey
+        value: "true"
+      - key: Deployment__AccessKey
+        generateValue: true
+      - key: ConnectionStrings__PostgreSQL
+        sync: false
+      - key: OpenAI__ApiKey
+        sync: false
+      - key: OpenAI__ChatModel
+        value: gpt-4.1-mini
+      - key: OpenAI__EmbeddingModel
+        value: text-embedding-3-small

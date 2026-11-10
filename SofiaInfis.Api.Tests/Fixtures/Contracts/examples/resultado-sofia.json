@@ -1,0 +1,28 @@
+{
+  "versaoContrato": "1.0",
+  "idExecucao": "8b2f0ad6-c2e4-4a68-8bdd-20f785bc798e",
+  "idSolicitacao": "e1b3a4cb-d729-4bd4-b796-b9c94be07b46",
+  "agente": {
+    "idAgente": "agente-fiscal",
+    "nome": "Agente Fiscal INFIS"
+  },
+  "status": "concluido",
+  "analise": "Há diferença de 10,00 entre o total e o pagamento do documento de teste.",
+  "achados": [
+    {
+      "idAchado": "ach-001",
+      "descricao": "Pagamento difere do total informado.",
+      "idDocumentos": [
+        "doc-001"
+      ],
+      "evidencias": [
+        "valor total 100,00; pagamento 90,00"
+      ],
+      "severidade": "media"
+    }
+  ],
+  "observacoes": [
+    "Dados inteiramente sintéticos; não representam análise fiscal real."
+  ],
+  "erro": null
+}

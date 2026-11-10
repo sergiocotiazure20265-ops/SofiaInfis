@@ -1,0 +1,60 @@
+{
+  "info": {
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "name": "SOFIA specialist test contract"
+  },
+  "item": [
+    {
+      "name": "Agent Card",
+      "response": [
+        {
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "name": "Card",
+          "status": "OK",
+          "body": "{\n  \"protocolVersion\": \"0.3.0\",\n  \"name\": \"Agente Fiscal INFIS\",\n  \"description\": \"Agente sintético de análise documental para interoperabilidade SOFIA.\",\n  \"url\": \"http://localhost:5181/a2a\",\n  \"preferredTransport\": \"JSONRPC\",\n  \"version\": \"1.0.0\",\n  \"capabilities\": {\n    \"streaming\": false,\n    \"pushNotifications\": false\n  },\n  \"defaultInputModes\": [\n    \"text/plain\"\n  ],\n  \"defaultOutputModes\": [\n    \"text/plain\"\n  ],\n  \"skills\": [\n    {\n      \"id\": \"analisar_documentos\",\n      \"name\": \"Análise documental\",\n      \"description\": \"Analisa documentos textuais conforme a especialidade fiscal.\",\n      \"tags\": [\n        \"infis\",\n        \"fiscal\",\n        \"sofia\"\n      ]\n    }\n  ],\n  \"securitySchemes\": {\n    \"sofiaService\": {\n      \"type\": \"http\",\n      \"scheme\": \"bearer\"\n    }\n  },\n  \"security\": [\n    {\n      \"sofiaService\": []\n    }\n  ]\n}\n",
+          "code": 200
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "http://127.0.0.1:5190/fiscal/.well-known/agent-card.json"
+      }
+    },
+    {
+      "name": "A2A RPC",
+      "response": [
+        {
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "name": "Completed",
+          "status": "OK",
+          "body": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": \"rpc-001\",\n  \"result\": {\n    \"kind\": \"task\",\n    \"id\": \"task-001\",\n    \"contextId\": \"context-001\",\n    \"status\": {\n      \"state\": \"completed\",\n      \"timestamp\": \"2026-11-05T12:00:00Z\"\n    },\n    \"artifacts\": [\n      {\n        \"artifactId\": \"art-001\",\n        \"name\": \"analise-sofia-v1\",\n        \"parts\": [\n          {\n            \"kind\": \"text\",\n            \"text\": \"{\\\"versaoContrato\\\":\\\"1.0\\\",\\\"idExecucao\\\":\\\"8b2f0ad6-c2e4-4a68-8bdd-20f785bc798e\\\",\\\"idSolicitacao\\\":\\\"e1b3a4cb-d729-4bd4-b796-b9c94be07b46\\\",\\\"agente\\\":{\\\"idAgente\\\":\\\"agente-fiscal\\\",\\\"nome\\\":\\\"Agente Fiscal INFIS\\\"},\\\"status\\\":\\\"concluido\\\",\\\"analise\\\":\\\"Há diferença de 10,00 entre o total e o pagamento do documento de teste.\\\",\\\"achados\\\":[{\\\"idAchado\\\":\\\"ach-001\\\",\\\"descricao\\\":\\\"Pagamento difere do total informado.\\\",\\\"idDocumentos\\\":[\\\"doc-001\\\"],\\\"evidencias\\\":[\\\"valor total 100,00; pagamento 90,00\\\"],\\\"severidade\\\":\\\"media\\\"}],\\\"observacoes\\\":[\\\"Dados inteiramente sintéticos; não representam análise fiscal real.\\\"],\\\"erro\\\":null}\"\n          }\n        ]\n      }\n    ]\n  }\n}\n",
+          "code": 200
+        }
+      ],
+      "request": {
+        "url": "http://127.0.0.1:5190/fiscal/rpc",
+        "body": {
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": \"rpc-001\",\n  \"method\": \"message/send\",\n  \"params\": {\n    \"message\": {\n      \"kind\": \"message\",\n      \"role\": \"user\",\n      \"messageId\": \"5f92c2ba-6870-4862-87ba-1ae8669a77f4\",\n      \"parts\": [\n        {\n          \"kind\": \"text\",\n          \"text\": \"{\\\"versaoContrato\\\":\\\"1.0\\\",\\\"idExecucao\\\":\\\"8b2f0ad6-c2e4-4a68-8bdd-20f785bc798e\\\",\\\"idSolicitacao\\\":\\\"e1b3a4cb-d729-4bd4-b796-b9c94be07b46\\\",\\\"usuario\\\":{\\\"nome\\\":\\\"Pessoa de Teste\\\"},\\\"pergunta\\\":\\\"Verifique divergências fiscais nos documentos.\\\",\\\"documentos\\\":[{\\\"idDocumento\\\":\\\"doc-001\\\",\\\"nome\\\":\\\"nota-teste.txt\\\",\\\"tipo\\\":\\\"text/plain\\\",\\\"texto\\\":\\\"Documento sintético: valor total 100,00; pagamento 90,00.\\\"},{\\\"idDocumento\\\":\\\"doc-002\\\",\\\"nome\\\":\\\"pedido-teste.txt\\\",\\\"tipo\\\":\\\"text/plain\\\",\\\"texto\\\":\\\"Pedido sintético: valor acordado 100,00.\\\"}],\\\"contexto\\\":{\\\"idioma\\\":\\\"pt-BR\\\"}}\"\n        }\n      ]\n    }\n  }\n}\n",
+          "mode": "raw"
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "method": "POST"
+      }
+    }
+  ]
+}

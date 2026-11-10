@@ -1,0 +1,5 @@
+<span class="brand" aria-label="SOFIA, inteligência fiscal da INFIS">
+    <span class="brand-symbol">in</span><span class="brand-fis">fis</span>
+    @if (ShowSofia) { <span class="brand-divider"></span><span class="brand-sofia">SOFIA<span>inteligência fiscal</span></span> }
+</span>
+@code { [Parameter] public bool ShowSofia { get; set; } = true; }

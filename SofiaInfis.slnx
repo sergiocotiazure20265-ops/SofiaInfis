@@ -3,4 +3,6 @@
     <File Path="docker-compose.yml" />
   </Folder>
   <Project Path="SofiaInfis.Api/SofiaInfis.Api.csproj" />
+  <Project Path="SofiaInfis.Api.Tests/SofiaInfis.Api.Tests.csproj" />
+  <Project Path="SofiaInfis.Web/SofiaInfis.Web.csproj" />
 </Solution>

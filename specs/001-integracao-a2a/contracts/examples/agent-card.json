@@ -1,0 +1,41 @@
+{
+  "protocolVersion": "0.3.0",
+  "name": "Agente Fiscal INFIS",
+  "description": "Agente sintético de análise documental para interoperabilidade SOFIA.",
+  "url": "http://localhost:5181/a2a",
+  "preferredTransport": "JSONRPC",
+  "version": "1.0.0",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false
+  },
+  "defaultInputModes": [
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "text/plain"
+  ],
+  "skills": [
+    {
+      "id": "analisar_documentos",
+      "name": "Análise documental",
+      "description": "Analisa documentos textuais conforme a especialidade fiscal.",
+      "tags": [
+        "infis",
+        "fiscal",
+        "sofia"
+      ]
+    }
+  ],
+  "securitySchemes": {
+    "sofiaService": {
+      "type": "http",
+      "scheme": "bearer"
+    }
+  },
+  "security": [
+    {
+      "sofiaService": []
+    }
+  ]
+}

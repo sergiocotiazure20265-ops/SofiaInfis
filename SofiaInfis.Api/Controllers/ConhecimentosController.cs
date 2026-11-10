@@ -8,8 +8,34 @@ namespace SofiaInfis.Api.Controllers
     [Route("api/v1/conhecimentos")]
     [ApiController]
     public class ConhecimentosController (
-        ConhecimentoService _service, ILogger<ConhecimentosController> _logger ) : ControllerBase
+        ConhecimentoService _service, ILogger<ConhecimentosController> _logger, ExtracaoDocumentoService extraction ) : ControllerBase
     {
+        /// <summary>Ingere um PDF textual, TXT ou XML na base de conhecimentos.</summary>
+        [HttpPost("ingest/arquivo")]
+        [Consumes("multipart/form-data")]
+        [RequestSizeLimit(6 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 6 * 1024 * 1024)]
+        public async Task<IActionResult> IngestArquivo([FromForm] IngestArquivoRequest request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var text = await extraction.ExtrairTextoAsync(request.arquivo, cancellationToken);
+                if (text.EndsWith("\n[DOCUMENTO TRUNCADO]", StringComparison.Ordinal))
+                    return BadRequest(new { mensagem = "O documento excede 20.000 caracteres. Divida-o para ingerir o conteúdo completo." });
+                if (text.Length < 20)
+                    return BadRequest(new { mensagem = "O documento precisa conter ao menos 20 caracteres de texto." });
+                return Ok(await _service.IngestAsync(new(request.titulo, text, request.fonte), cancellationToken));
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidDataException)
+            { return BadRequest(new { mensagem = "Arquivo inválido. Use PDF textual, TXT ou XML válido de até 5 MB e 20.000 caracteres." }); }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro na ingestão de arquivo.");
+                return StatusCode(500, new { mensagem = "Não foi possível registrar o documento." });
+            }
+        }
+
         /// <summary>
         /// Realiza a ingestão de conhecimentos na base RAG da SOFIA.
         /// </summary>

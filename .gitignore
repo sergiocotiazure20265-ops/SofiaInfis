@@ -13,6 +13,7 @@ TestResults/
 SofiaInfis.Api/appsettings.json
 SofiaInfis.Api/appsettings.*.json
 !SofiaInfis.Api/appsettings.example.json
+!SofiaInfis.Api/appsettings.a2a.example.json
 docker-compose.yml
 docker-compose.override.yml
 .env
@@ -26,3 +27,11 @@ docker-compose.override.yml
 uploads/
 artifacts/
 *.zip
+packages/
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+# Blazor local overrides and service credentials
+SofiaInfis.Web/appsettings.Local.json
+SofiaInfis.Web/appsettings.*.local.json

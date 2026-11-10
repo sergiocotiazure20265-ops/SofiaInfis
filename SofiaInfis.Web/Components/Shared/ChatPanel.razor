@@ -1,0 +1,91 @@
+@implements IAsyncDisposable
+@inject ISofiaChat Sofia
+@inject IJSRuntime JS
+<div class="chat-shell @(_sidebarOpen ? "sidebar-open" : "")">
+    @if (_sidebarOpen) { <button class="sidebar-scrim" aria-label="Fechar menu" @onclick="() => _sidebarOpen = false"></button> }
+    <aside class="chat-sidebar" aria-label="Conversas e especialistas">
+        <button class="brand-link sidebar-brand" @onclick="Leave" disabled="@_busy"><Brand /></button>
+        <button class="button new-chat" @onclick="NewChat" disabled="@_busy"><UiIcon Name="plus" Size="18" /> Nova conversa <span>↗</span></button>
+        <a class="conversation-link" href="/conhecimentos">Base de conhecimentos</a>
+        <span class="sidebar-label">NESTA CONVERSA</span>
+        @if (_runs.Count == 0) { <p class="sidebar-empty">Sua próxima boa pergunta<br />começa aqui.</p> }
+        @foreach (var run in _runs.TakeLast(6).Reverse()) { <button class="conversation-link" @onclick="() => ScrollTo(run)"><UiIcon Name="chat" Size="17" /><span>@run.Question</span></button> }
+        <div class="sidebar-agents"><span class="sidebar-label">INTELIGÊNCIA EM CONJUNTO</span>
+        @if (_catalog.Count > 0)
+        {
+            @foreach (var agent in _catalog) { <div class="catalog-agent"><span class="agent-mini"><UiIcon Name="layers" Size="15" /></span><span>@agent.nome</span><span class="availability @(agent.elegivel ? "available" : "")" title="@(agent.elegivel ? "Disponível para análise" : "Indisponível")"></span></div> }
+        }
+        else { <p class="sidebar-empty">SOFIA consulta sua base de conhecimentos<br />e analisa os documentos enviados.</p> }
+        </div>
+        <div class="sidebar-bottom"><div class="sidebar-promise"><UiIcon Name="shield" Size="20" /><p>Mais clareza.<br /><strong>Em cada decisão.</strong></p></div>
+            @if (Sofia.IsDemo) { <span class="demo-note">Demonstração · dados simulados</span> }
+            <div class="user-card"><span class="user-avatar">@Initial</span><div><strong>@UserName</strong><span>Sua conversa com a SOFIA</span></div><button class="icon-button" @onclick="Leave" disabled="@_busy" aria-label="Voltar à apresentação"><UiIcon Name="back" Size="16" /></button></div>
+        </div>
+    </aside>
+    <main class="chat-main">
+        <header class="chat-header"><div><button class="icon-button mobile-menu" aria-label="Abrir menu" @onclick="() => _sidebarOpen = true"><UiIcon Name="menu" /></button><div><strong>SOFIA <span class="header-ai">@(Sofia.IsDemo ? "DEMO" : "IA")</span></strong><span class="chat-header-caption">Inteligência fiscal, em boa companhia.</span></div></div><button class="quiet-button" aria-label="Nova conversa" @onclick="NewChat" disabled="@_busy"><UiIcon Name="plus" Size="17" /><span>Nova conversa</span></button></header>
+        <div class="chat-scroll" @ref="_scrollArea">
+            @if (_runs.Count == 0)
+            {
+                <section class="chat-welcome"><div class="welcome-portrait"><div class="welcome-photo"><img src="images/sofia-welcome.png" alt="SOFIA, sua parceira em inteligência fiscal." /></div><span class="portrait-spark spark-one">✦</span><span class="portrait-spark spark-two">✧</span></div>
+                    <span class="eyebrow text-orange">BOM TER VOCÊ POR AQUI</span><h1>Olá, @FirstName.<br /><span>O que vamos analisar hoje?</span></h1><p>Traga sua pergunta ou seus documentos.<br />Eu consulto a base de conhecimentos para ajudar você na análise.</p>
+                    <div class="suggestion-grid">
+                        <button @onclick='() => Suggest("Quais pontos devo observar na análise fiscal de um documento?")'><UiIcon Name="file" /><strong>Entender um documento</strong><span>Um olhar atento aos detalhes</span><UiIcon Name="arrow" Size="17" /></button>
+                        <button @onclick='() => Suggest("Como identificar possíveis riscos e inconsistências nos documentos?")'><UiIcon Name="shield" /><strong>Identificar riscos</strong><span>Mais contexto para decidir</span><UiIcon Name="arrow" Size="17" /></button>
+                        <button @onclick='() => Suggest("Como organizar os próximos passos de uma revisão fiscal?")'><UiIcon Name="chart" /><strong>Encontrar caminhos</strong><span>Da informação à próxima ação</span><UiIcon Name="arrow" Size="17" /></button>
+                    </div>
+                </section>
+            }
+            else
+            {
+                <div class="messages">
+                    @foreach (var run in _runs)
+                    {
+                        <article class="chat-turn" id="run-@run.LocalId" @key="run.LocalId">
+                            <div class="user-message"><span class="message-author">Você</span><p>@run.Question</p>@if (run.Files.Count > 0) { <div class="message-files">@foreach (var file in run.Files) { <span><UiIcon Name="file" Size="14" /> @file</span> }</div> }</div>
+                            <div class="assistant-message"><div class="answer-avatar sofia-avatar"><img src="images/sofia-welcome.png" alt="" /></div><div class="answer-content"><div class="answer-heading"><strong>SOFIA</strong><span>@(run.IsRunning ? "Preparando um olhar mais completo" : "Sua parceira em inteligência fiscal")</span></div>
+                                @if (run.IsRunning) { <div class="working-indicator"><span class="typing-dots"><i></i><i></i><i></i></span>@run.StateLabel</div> }
+                                @if (run.Answer is not null) { <section class="final-answer"><span class="answer-eyebrow"><UiIcon Name="sparkles" Size="15" /> @(run.Agents.Count > 0 ? "SÍNTESE FINAL" : "RESPOSTA DA SOFIA")</span><MarkdownText Text="@run.Answer" /></section> }
+                                @if (run.Agents.Count > 0)
+                                {
+                                    <div class="agent-results"><div class="results-title"><UiIcon Name="layers" Size="17" /><strong>Olhares dos especialistas</strong><span>@run.Agents.Count(a => a.Result is not null)/@run.Agents.Count</span></div>
+                                    @foreach (var agent in run.Agents)
+                                    {
+                                        <details class="agent-result" @key="agent.Id"><summary><span class="agent-result-icon"><UiIcon Name="layers" Size="18" /></span><strong>@agent.Name</strong><span class="result-status @(agent.Error is not null || agent.Result?.status == "erro" ? "status-warning" : "")">@AgentStatus(agent)</span><UiIcon Name="chevron" Size="17" /></summary>
+                                            <div class="agent-result-body">
+                                                @if (agent.Result is not null)
+                                                {
+                                                    <MarkdownText Text="@agent.Result.analise" />
+                                                    @foreach (var finding in agent.Result.achados) { <div class="finding"><div><strong>@finding.descricao</strong>@if (finding.severidade is not null) { <span class="severity">@finding.severidade</span> }</div>@foreach (var evidence in finding.evidencias) { <blockquote>@evidence</blockquote> }<small>Documentos: @string.Join(", ", finding.idDocumentos)</small></div> }
+                                                    @if (agent.Result.achados.Count == 0 && agent.Result.status != "erro") { <p class="subtle-caption">O especialista não registrou achados nesta análise.</p> }
+                                                    @if (agent.Result.observacoes is { Count: > 0 }) { <div class="agent-observations">@foreach (var observation in agent.Result.observacoes) { <p>@observation</p> }</div> }
+                                                    @if (agent.Result.erro is not null) { <p class="inline-warning">@agent.Result.erro.mensagem</p> }
+                                                }
+                                                else { <p>@(agent.Error is not null ? "Este especialista não concluiu uma análise válida. As demais contribuições foram preservadas." : "Aguardando o especialista concluir sua análise.")</p> }
+                                            </div>
+                                        </details>
+                                    }
+                                    </div>
+                                }
+                                @if (!run.IsRunning && run.Answer is null && run.HasUsableResults) { <div class="consolidate-box"><div><strong>@run.StateLabel</strong><p>Reúna as contribuições em uma resposta da SOFIA.</p></div><button class="button button-soft" disabled="@_busy" @onclick="() => Consolidate(run)"><UiIcon Name="sparkles" Size="17" />@(run.IsSynthesizing ? "Preparando síntese…" : "Gerar síntese final")</button></div> }
+                                @if (!run.IsRunning && run.Answer is null && !run.HasUsableResults && run.Error is null) { <p class="inline-warning">@run.StateLabel. Nenhuma análise utilizável foi recebida. Você pode tentar novamente em uma nova mensagem.</p> }
+                                @if (run.Error is not null) { <p class="inline-warning" role="alert"><UiIcon Name="info" Size="16" />@run.Error</p> }
+                                @if (run.Trace.Count > 0 || run.ExecutionId is not null) { <RunTrace Run="run" OnCopy="() => CopyId(run)" /> }
+                            </div></div>
+                        </article>
+                    }
+                </div>
+            }
+        </div>
+        <div class="composer-area">
+            @if (_notice is not null) { <div class="composer-notice" role="status">@_notice<button class="icon-button" aria-label="Fechar aviso" @onclick="() => _notice = null"><UiIcon Name="x" Size="15" /></button></div> }
+            <div class="composer @(_busy ? "composer-busy" : "")" @ref="_composer">
+                <div class="drop-overlay"><UiIcon Name="attach" Size="27" /><strong>Solte seus documentos aqui</strong><span>PDF, TXT ou XML · até 5 MB por arquivo</span></div>
+                @if (_files.Count > 0) { <div class="staged-files">@foreach (var file in _files) { <div><span class="file-type">@Path.GetExtension(file.Name).TrimStart('.').ToUpperInvariant()</span><span><strong>@file.Name</strong><small>@file.SizeLabel</small></span><button class="icon-button" aria-label="@($"Remover {file.Name}")" @onclick="() => _files.Remove(file)" disabled="@_busy"><UiIcon Name="x" Size="14" /></button></div> }</div> }
+                <label class="sr-only" for="chat-question">Sua pergunta para a SOFIA</label><textarea id="chat-question" @ref="_questionElement" @bind="_question" @bind:event="oninput" placeholder="Escreva sua pergunta ou arraste seus documentos…" rows="2" maxlength="2000" disabled="@_busy"></textarea>
+                <div class="composer-toolbar"><div><label for="chat-files" class="attach-button @(_busy ? "disabled" : "")" title="Anexar PDF, TXT ou XML"><UiIcon Name="attach" Size="19" /><span>Anexar documentos</span></label><InputFile id="chat-files" class="file-input" OnChange="FilesSelected" multiple accept=".pdf,.txt,.xml,application/pdf,text/plain,application/xml,text/xml" disabled="@_busy" @key="_fileInputKey" /><span class="composer-divider"></span><span class="composer-hint">PDF, TXT, XML · até 5 arquivos</span></div>@if (_busy) { <button class="send-button stop-button" aria-label="Parar espera e solicitar cancelamento" @onclick="Stop"><UiIcon Name="stop" Size="17" /></button> } else { <button class="send-button" disabled="@((string.IsNullOrWhiteSpace(_question) && _files.Count == 0) || _readingFiles)" aria-label="Enviar mensagem" @onclick="Send"><UiIcon Name="send" Size="21" /></button> }</div>
+            </div>
+            <div class="composer-footnote"><span><UiIcon Name="shield" Size="12" /> Compartilhe apenas documentos autorizados.</span><span>A SOFIA pode cometer erros. Revise informações importantes.</span></div>
+        </div>
+    </main>
+</div>

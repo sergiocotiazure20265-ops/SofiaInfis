@@ -1,0 +1,17 @@
+.git/
+.vs/
+.vscode/
+**/bin/
+**/obj/
+TestResults/
+*.log*
+.env*
+**/appsettings.json
+**/appsettings.Development.json
+**/*.user
+**/*.pfx
+**/*.pem
+node_modules/
+coverage/
+Dockerfile*
+.dockerignore

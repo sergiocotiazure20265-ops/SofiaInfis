@@ -1,0 +1,23 @@
+{
+  "usuario": {
+    "nome": "Pessoa de Teste"
+  },
+  "pergunta": "Verifique divergências fiscais nos documentos.",
+  "documentos": [
+    {
+      "idDocumento": "doc-001",
+      "nome": "nota-teste.txt",
+      "tipo": "text/plain",
+      "texto": "Documento sintético: valor total 100,00; pagamento 90,00."
+    },
+    {
+      "idDocumento": "doc-002",
+      "nome": "pedido-teste.txt",
+      "tipo": "text/plain",
+      "texto": "Pedido sintético: valor acordado 100,00."
+    }
+  ],
+  "capacidades": [
+    "analisar_documentos"
+  ]
+}

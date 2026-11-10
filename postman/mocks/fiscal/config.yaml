@@ -1,0 +1,15 @@
+version: 1
+id: e65513a7-b630-42a3-8ef2-53f451f3373c
+name: sofia-fiscal
+slug: sofia-fiscal
+protocol: http
+interceptRequests: true
+port: 5190
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true
+generatedFrom:
+  type: collection
+  mode: static
+  path: ../../contracts/specialist.postman_collection.json

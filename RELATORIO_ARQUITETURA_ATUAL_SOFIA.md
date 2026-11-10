@@ -2,6 +2,13 @@
 
 Data: 05/11/2026. Escopo: arquivos presentes na pasta da solução `SofiaInfis`.
 
+> **Baseline histórica, anterior às implementações A2A e Blazor.** As afirmações
+> deste diagnóstico descrevem a inspeção inicial e não o estado atual. A solução
+> agora inclui API com A2A, frontend Blazor e projeto de testes. Consulte a
+> [arquitetura atual](docs/ARQUITETURA_SOFIA.md), a
+> [especificação 001](specs/001-integracao-a2a/spec.md) e a
+> [especificação 002](specs/002-interface-blazor/spec.md).
+
 ## 1. Resultado executivo e critérios
 
 A solução contém uma API ASP.NET Core em .NET 10, com perguntas respondidas diretamente pelo SDK da OpenAI, recuperação semântica de conhecimentos no PostgreSQL/PgVector e extração de texto de anexos PDF/TXT. O fluxo implementado é sequencial e atende uma requisição por vez dentro de cada execução.

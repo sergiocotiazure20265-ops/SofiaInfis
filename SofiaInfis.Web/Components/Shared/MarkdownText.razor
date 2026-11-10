@@ -1,0 +1,21 @@
+<div class="markdown-text">
+@foreach (var line in (Text ?? "").Replace("\r", "").Split('\n'))
+{
+    @if (string.IsNullOrWhiteSpace(line)) { <div class="paragraph-gap"></div> }
+    else
+    {
+        var heading = line.StartsWith("#");
+        var bullet = line.StartsWith("- ") || line.StartsWith("* ");
+        var content = heading ? line.TrimStart('#', ' ') : bullet ? line[2..] : line;
+        <div class="@(heading ? "markdown-heading" : bullet ? "markdown-bullet" : "markdown-line")">
+            @if (bullet) { <span aria-hidden="true">•</span> }
+            <span>@foreach (var fragment in System.Text.RegularExpressions.Regex.Split(content, @"(\*\*[^*]+\*\*)"))
+            {
+                @if (fragment.StartsWith("**") && fragment.EndsWith("**") && fragment.Length > 4) { <strong>@fragment[2..^2]</strong> }
+                else { @fragment }
+            }</span>
+        </div>
+    }
+}
+</div>
+@code { [Parameter] public string? Text { get; set; } }

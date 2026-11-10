@@ -1,4 +1,6 @@
-﻿using System.Text;
+using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 
@@ -20,8 +22,8 @@ namespace SofiaInfis.Api.Services
             string extensao = Path.GetExtension(
                 arquivo.FileName).ToLowerInvariant();
 
-            if (extensao != ".pdf" && extensao != ".txt")
-                throw new ArgumentException("Somente arquivos PDF e TXT são permitidos.");
+            if (extensao is not (".pdf" or ".txt" or ".xml"))
+                throw new ArgumentException("Somente arquivos PDF, TXT e XML são permitidos.");
 
             await using var stream = arquivo.OpenReadStream();
 
@@ -30,6 +32,22 @@ namespace SofiaInfis.Api.Services
             if (extensao == ".pdf")
             {
                 texto = ExtrairPdf(stream);
+            }
+            else if (extensao == ".xml")
+            {
+                try
+                {
+                    using var reader = XmlReader.Create(stream, new XmlReaderSettings
+                    {
+                        Async = true, DtdProcessing = DtdProcessing.Prohibit,
+                        XmlResolver = null, MaxCharactersInDocument = TamanhoMaximoArquivo
+                    });
+                    var xml = await XDocument.LoadAsync(reader, LoadOptions.None, cancellationToken);
+                    if (xml.Root is null) throw new InvalidDataException("XML sem elemento raiz.");
+                    // Preserve field names and attributes for fiscal documents such as NF-e.
+                    texto = xml.Root.ToString();
+                }
+                catch (XmlException ex) { throw new InvalidDataException("XML inválido ou com DTD proibido.", ex); }
             }
             else
             {

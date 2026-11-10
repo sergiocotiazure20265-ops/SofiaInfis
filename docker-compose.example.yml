@@ -1,6 +1,45 @@
 name: sofia-infis
 
 services:
+  api:
+    build:
+      context: .
+      dockerfile: SofiaInfis.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      OpenAI__ApiKey: ${SOFIA_OPENAI_API_KEY:-}
+      OpenAI__ChatModel: ${SOFIA_CHAT_MODEL:-gpt-4.1-mini}
+      OpenAI__EmbeddingModel: text-embedding-3-small
+      ConnectionStrings__PostgreSQL: Host=postgres;Port=5432;Database=bd-sofia-infis;Username=infis;Password=${SOFIA_POSTGRES_PASSWORD:?Defina SOFIA_POSTGRES_PASSWORD no .env}
+      A2A__Enabled: "false"
+      Rag__InitializeDatabase: "true"
+    ports:
+      - "127.0.0.1:5151:8080"
+    networks:
+      - sofia_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: SofiaInfis.Web/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Sofia__ApiBaseUrl: http://api:8080/
+      Sofia__AllowInternalHttp: "true"
+      Sofia__UseSpecialistAgents: "false"
+      Sofia__DemoMode: "false"
+    ports:
+      - "127.0.0.1:5275:8080"
+    networks:
+      - sofia_network
+    depends_on:
+      - api
+
   postgres:
     image: pgvector/pgvector:pg16
     restart: unless-stopped

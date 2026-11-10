@@ -1,0 +1,18 @@
+{
+  "jsonrpc": "2.0",
+  "id": "rpc-001",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "kind": "message",
+      "role": "user",
+      "messageId": "5f92c2ba-6870-4862-87ba-1ae8669a77f4",
+      "parts": [
+        {
+          "kind": "text",
+          "text": "{\"versaoContrato\":\"1.0\",\"idExecucao\":\"8b2f0ad6-c2e4-4a68-8bdd-20f785bc798e\",\"idSolicitacao\":\"e1b3a4cb-d729-4bd4-b796-b9c94be07b46\",\"usuario\":{\"nome\":\"Pessoa de Teste\"},\"pergunta\":\"Verifique divergências fiscais nos documentos.\",\"documentos\":[{\"idDocumento\":\"doc-001\",\"nome\":\"nota-teste.txt\",\"tipo\":\"text/plain\",\"texto\":\"Documento sintético: valor total 100,00; pagamento 90,00.\"},{\"idDocumento\":\"doc-002\",\"nome\":\"pedido-teste.txt\",\"tipo\":\"text/plain\",\"texto\":\"Pedido sintético: valor acordado 100,00.\"}],\"contexto\":{\"idioma\":\"pt-BR\"}}"
+        }
+      ]
+    }
+  }
+}
