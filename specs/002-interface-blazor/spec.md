@@ -44,6 +44,9 @@ preparar um TXT para uma execução documental.
    nenhum conteúdo sabidamente truncado é delegado.
 5. Enter envia; Shift+Enter insere linha. Durante leitura/envio, os controles
    impedem submissões concorrentes no mesmo chat.
+6. A evolução [005 — Entrada de voz](../005-comando-voz/spec.md) adiciona ditado
+   pt-BR com botão de iniciar/parar, texto revisável e envio manual. Navegadores
+   sem suporte mantêm o compositor textual. Áudio não é recebido pela API.
 
 ### US3 — Consultar contribuições e síntese (P1)
 

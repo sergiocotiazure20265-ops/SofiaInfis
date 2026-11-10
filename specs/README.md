@@ -1,12 +1,16 @@
 # Especificações da SOFIA
 
-Atualizado em 2026-11-05. As duas entregas estão implementadas e possuem validação
-local registrada. Isso não equivale a validação com agentes reais ou aceite de produção.
+Atualizado em 2026-11-10. As entregas 001–004 possuem evidências de validação local
+e/ou publicação. A 005 acrescenta ditado pt-BR ao chat, sem mudar os contratos da API.
+Os relatórios distinguem testes sintéticos, verificações reais e limitações.
 
 | Feature | Escopo | Documentos |
 |---|---|---|
 |001 — Integração A2A | Backend, contratos, descoberta, delegação, histórico e segurança | [Spec](001-integracao-a2a/spec.md), [plano](001-integracao-a2a/plan.md), [tarefas](001-integracao-a2a/tasks.md), [validação](001-integracao-a2a/validation-results.md) |
 |002 — Interface Blazor | Apresentação, nome, chat, documentos, agentes, síntese e rastreamento | [Spec](002-interface-blazor/spec.md), [plano](002-interface-blazor/plan.md), [quickstart](002-interface-blazor/quickstart.md), [validação](../SofiaInfis.Web/VALIDACAO.md) |
+|003 — RAG integrado | API/Web/RAG, TXT/XML, bootstrap e containers | [Spec](003-rag-integrado/spec.md), [plano](003-rag-integrado/plan.md), [tarefas](003-rag-integrado/tasks.md), [validação](003-rag-integrado/validation-results.md) |
+|004 — Publicação gratuita | Render Free, Neon, autenticação e migração preservada | [Spec](004-publicacao-gratuita/spec.md), [validação](004-publicacao-gratuita/validation-results.md) |
+|005 — Entrada de voz | Ditado pt-BR, revisão manual, suporte progressivo e cancelamento | [Spec](005-comando-voz/spec.md), [plano](005-comando-voz/plan.md), [tarefas](005-comando-voz/tasks.md), [validação](005-comando-voz/validation-results.md) |
 
 O backend 001 não foi reespecificado para incorporar a UI. A 002 documenta seu
 consumidor e a síntese sob demanda pelo endpoint legado, mantendo os contratos.

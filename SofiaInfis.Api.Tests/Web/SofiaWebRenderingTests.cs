@@ -18,6 +18,9 @@ public sealed class SofiaWebRenderingTests
         Assert.Contains("sofia-welcome.png", html); Assert.DoesNotContain("test-service-token", html);
         Assert.True((await client.GetAsync("/images/sofia-welcome.png")).IsSuccessStatusCode);
         Assert.True((await client.GetAsync("/chat.js")).IsSuccessStatusCode);
+        using var voiceModule = await client.GetAsync("/voice-input.mjs");
+        Assert.True(voiceModule.IsSuccessStatusCode);
+        Assert.Contains("javascript", voiceModule.Content.Headers.ContentType!.MediaType!);
     }
     [Fact]
     public async Task Untrusted_agent_markdown_is_encoded_while_supported_emphasis_is_rendered()

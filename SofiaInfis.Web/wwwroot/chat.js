@@ -1,4 +1,7 @@
+import { bindVoiceInput } from './voice-input.mjs';
+
 export function bindComposer(root, dotnet) {
+    const voice = bindVoiceInput(root, dotnet);
     let depth = 0;
     const over = e => { if (e.dataTransfer?.types.includes('Files')) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } };
     const enter = e => { if (e.dataTransfer?.types.includes('Files')) { e.preventDefault(); depth++; root.classList.add('dragging'); } };
@@ -10,9 +13,9 @@ export function bindComposer(root, dotnet) {
         input.files = e.dataTransfer.files;
         input.dispatchEvent(new Event('change', { bubbles: true }));
     };
-    const key = e => { if (e.target.tagName === 'TEXTAREA' && e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); dotnet.invokeMethodAsync('SendFromKeyboard'); } };
+    const key = e => { if (e.target.tagName === 'TEXTAREA' && e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); if (!voice.active) dotnet.invokeMethodAsync('SendFromKeyboard'); } };
     root.addEventListener('dragenter', enter); root.addEventListener('dragover', over); root.addEventListener('dragleave', leave); root.addEventListener('drop', drop); root.addEventListener('keydown', key);
-    return { dispose() { root.removeEventListener('dragenter', enter); root.removeEventListener('dragover', over); root.removeEventListener('dragleave', leave); root.removeEventListener('drop', drop); root.removeEventListener('keydown', key); } };
+    return { cancelVoice() { voice.cancel(); }, dispose() { voice.dispose(); root.removeEventListener('dragenter', enter); root.removeEventListener('dragover', over); root.removeEventListener('dragleave', leave); root.removeEventListener('drop', drop); root.removeEventListener('keydown', key); } };
 }
 export function follow(area) { requestAnimationFrame(() => { if (area.scrollHeight - area.scrollTop - area.clientHeight < 320) area.scrollTo({ top: area.scrollHeight, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }); }); }
 export function scrollToTurn(id) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }

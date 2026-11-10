@@ -66,6 +66,7 @@ consumindo a chave configurada. Consulte o [guia](docs/DEPLOY_GRATUITO.md) e a
 |---|---|
 | Interface Blazor .NET 10 | Implementada; apresentação, identificação e chat responsivo |
 | Anexos no chat | PDF/TXT/XML enviados à API; delegação opcional |
+| Entrada de voz | Ditado pt-BR, revisão antes do envio e fallback para texto |
 | Resultados na interface | Análises individuais, síntese sob demanda e rastreamento expansível |
 | Perguntas com OpenAI e contexto RAG | Implementada no código |
 | Ingestão textual, chunking e embeddings | Implementada no código |
@@ -290,6 +291,10 @@ perguntas com as análises em TXT; essa operação usa RAG/OpenAI e pode consumi
 tokens. A síntese depende de ação do usuário e não altera os resultados A2A.
 Não há memória conversacional de LLM.
 Agentes reais dos alunos precisam ser cadastrados e validados no ambiente da turma.
+
+A [feature 005](specs/005-comando-voz/spec.md) adiciona entrada de voz ao compositor.
+Clique no microfone, fale em português, revise e envie. A disponibilidade depende
+do navegador e da permissão do microfone; a API continua recebendo somente texto.
 
 ## Contribuição e validação
 

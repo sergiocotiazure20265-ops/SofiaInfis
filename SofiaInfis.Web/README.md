@@ -112,3 +112,22 @@ dois agentes Kestrel, Mongo/PgVector isolados e OpenAI sintética.
 Prepare os bancos conforme `../SofiaInfis.Api.Tests/Fixtures/README.md` para esse
 teste de integração e para a suíte completa. Nenhum teste exige agentes de alunos
 ou uma chave real de OpenAI.
+
+## Entrada de voz no chat
+
+Clique no microfone **Ditar pergunta**, permita o uso pelo navegador e fale em
+português. Clique novamente ou pressione Esc para encerrar. Revise o texto e
+clique em Enviar; nenhuma transcrição envia a pergunta automaticamente.
+
+O texto falado é acrescentado ao texto já digitado. Cada ditado dura até um minuto
+e respeita o limite de 2.000 caracteres do compositor, com aviso ao atingir o limite.
+A captura termina ao sair da aba, trocar de conversa ou perder a conexão do chat.
+Permissão negada, falha de rede ou ausência de suporte não impedem digitação/anexos.
+
+Requer HTTPS (ou localhost) e um navegador com reconhecimento de fala disponível.
+O navegador pode usar um serviço on-line para reconhecer o áudio. A SOFIA não grava
+nem envia áudio à API; apenas o texto segue para o fluxo existente após o envio.
+Não há novo serviço pago de transcrição. A qualidade e o suporte dependem do navegador.
+
+Especificação: [005 — Entrada de voz](../specs/005-comando-voz/spec.md).
+Teste do adaptador, na raiz: `node --test tests/voice-input.test.mjs`.

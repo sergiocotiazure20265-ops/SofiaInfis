@@ -1,6 +1,7 @@
 param(
     [string]$BaseUrl = 'https://sofia-infis.onrender.com',
-    [switch]$TestOpenAI
+    [switch]$TestOpenAI,
+    [switch]$TestVoiceAssets
 )
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -26,6 +27,15 @@ $result = [ordered]@{
     knowledge = $knowledge.StatusCode
     swagger = $true
     documentUploadDocumented = $true
+}
+if ($TestVoiceAssets) {
+    $voiceModule = Invoke-WebRequest "$BaseUrl/voice-input.mjs" -Authentication Basic -Credential $credential -TimeoutSec 30
+    $composerModule = Invoke-WebRequest "$BaseUrl/chat.js" -Authentication Basic -Credential $credential -TimeoutSec 30
+    if ($voiceModule.StatusCode -ne 200 -or $voiceModule.Headers.'Content-Type' -notmatch 'javascript' -or $composerModule.Content -notmatch 'voice-input\.mjs') {
+        throw 'O módulo de voz publicado não está disponível ou integrado ao compositor.'
+    }
+    $result.voiceModulePublished = $true
+    $result.voiceComposerBinding = $true
 }
 if ($TestOpenAI) {
     $search = Invoke-RestMethod "$BaseUrl/api/v1/conhecimentos/buscar" -Method Post -Authentication Basic -Credential $credential -ContentType 'application/json' -Body (@{pergunta='Serviços fiscais da INFIS';topK=3} | ConvertTo-Json) -TimeoutSec 120
