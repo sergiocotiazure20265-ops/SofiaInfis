@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 using SofiaInfis.Api.DTOs;
 using SofiaInfis.Api.DTOs.A2A;
 using SofiaInfis.Api.Services;
@@ -16,6 +17,38 @@ public sealed class SofiaWebGatewayTests
     private static HttpResponseMessage Json(object data) => new(HttpStatusCode.OK) { Content = JsonContent.Create(data) };
     private sealed class Handler(Func<HttpRequestMessage, Task<HttpResponseMessage>> handle) : HttpMessageHandler
     { protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) => handle(request); }
+    [Fact]
+    public async Task Configured_capabilities_are_unique_and_preserve_all_authorized_skills_in_request()
+    {
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Sofia:UseSpecialistAgents"] = "true", ["Sofia:ApiBaseUrl"] = "https://sofia.example.invalid/",
+            ["Sofia:ServiceToken"] = "synthetic-token",
+            ["Sofia:Capabilities:0"] = "analisar_documentos",
+            ["Sofia:Capabilities:1"] = "monitorar_legislacao_tributaria"
+        }).Build();
+        var bound = config.GetSection("Sofia").Get<SofiaOptions>()!;
+        var execution = Guid.NewGuid();
+        var posted = false;
+        var gateway = new LiveSofiaChat(new HttpClient(new Handler(async request =>
+        {
+            if (request.RequestUri!.AbsolutePath == "/api/v1/agentes") return Json(new { items = Array.Empty<AgenteDisponivel>() });
+            if (request.Method == HttpMethod.Post)
+            {
+                var body = JsonNode.Parse(await request.Content!.ReadAsStringAsync())!;
+                Assert.Equal(new[] { "analisar_documentos", "monitorar_legislacao_tributaria" },
+                    body["capacidades"]!.AsArray().Select(x => x!.GetValue<string>()));
+                Assert.True(body["documentos"]![0]!["textoCompleto"]!.GetValue<bool>());
+                posted = true;
+                return new(HttpStatusCode.Accepted) { Content = JsonContent.Create(new OrquestracaoAceita(execution.ToString(), "em_andamento", DateTime.UtcNow, true, "unused")) };
+            }
+            return Json(new ExecucaoConsulta(execution.ToString(), "concluida", DateTime.UtcNow, DateTime.UtcNow,
+                DateTime.UtcNow.AddDays(1), ["analisar_documentos", "monitorar_legislacao_tributaria"], [], new([], null), true));
+        })), Options.Create(bound), new(new ExtracaoDocumentoService()));
+        var input = new ChatInput("Pessoa sintética", "Verifique o XML sintético", [new("teste.xml", Encoding.UTF8.GetBytes("<CompNfse><Nfse><Numero>1</Numero></Nfse></CompNfse>"))]);
+        await gateway.SubmitAsync(input, new ChatRun(input.Question, ["teste.xml"]), () => Task.CompletedTask, default);
+        Assert.True(posted);
+    }
     [Fact]
     public async Task Question_without_attachments_uses_original_multipart_api_without_service_token()
     {

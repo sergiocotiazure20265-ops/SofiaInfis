@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 using SofiaInfis.Api.Services;
 using SofiaInfis.Api.Tests.Fixtures;
 using SofiaInfis.Web.Services;
@@ -8,8 +9,10 @@ namespace SofiaInfis.Api.Tests.Web;
 public sealed class SofiaWebA2AIntegrationTests(MongoFixture mongo, PostgresFixture postgres)
     : IClassFixture<MongoFixture>, IClassFixture<PostgresFixture>
 {
-    [Fact]
-    public async Task Frontend_client_reaches_real_orchestrator_two_agents_and_separate_synthesis()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Frontend_client_reaches_real_orchestrator_two_agents_and_separate_synthesis(bool configureCapabilities)
     {
         await using var first = await A2AAgentServer.StartAsync("fiscal");
         await using var second = await A2AAgentServer.StartAsync("contabil");
@@ -23,8 +26,15 @@ public sealed class SofiaWebA2AIntegrationTests(MongoFixture mongo, PostgresFixt
             await Task.Delay(50);
         }
         using var transport = api.CreateClient();
-        var gateway = new LiveSofiaChat(transport, Options.Create(new SofiaOptions { UseSpecialistAgents = true, ApiBaseUrl = "http://localhost/", ServiceToken = configuration.Token }), new(new ExtracaoDocumentoService()));
-        var input = new ChatInput("Pessoa integrada", "Analise os documentos sintéticos", [new("a.txt", Encoding.UTF8.GetBytes("Texto integral de teste A")), new("b.txt", Encoding.UTF8.GetBytes("Texto integral de teste B"))]);
+        var values = new Dictionary<string, string?>
+        {
+            ["Sofia:UseSpecialistAgents"] = "true", ["Sofia:ApiBaseUrl"] = "http://localhost/",
+            ["Sofia:ServiceToken"] = configuration.Token
+        };
+        if (configureCapabilities) values["Sofia:Capabilities:0"] = "analisar_documentos";
+        var bound = new ConfigurationBuilder().AddInMemoryCollection(values).Build().GetSection("Sofia").Get<SofiaOptions>()!;
+        var gateway = new LiveSofiaChat(transport, Options.Create(bound), new(new ExtracaoDocumentoService()));
+        var input = new ChatInput("Pessoa integrada", "Analise os documentos sintéticos", [new("a.txt", Encoding.UTF8.GetBytes("Texto integral de teste A")), new("b.xml", Encoding.UTF8.GetBytes("<CompNfse><Nfse><Numero>1</Numero><Discriminacao>DOCUMENTO SINTETICO SEM VALIDADE FISCAL</Discriminacao></Nfse></CompNfse>"))]);
         var run = new ChatRun(input.Question, input.Files.Select(f => f.Name).ToArray());
         await gateway.SubmitAsync(input, run, () => Task.CompletedTask, default);
         Assert.Equal("concluida", run.State); Assert.Equal(2, run.Agents.Count);

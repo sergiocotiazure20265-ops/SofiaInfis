@@ -65,7 +65,10 @@ public sealed class LiveSofiaChat(HttpClient http, IOptions<SofiaOptions> option
             var prepared = await documents.PrepareAsync(input.Files, deadline.Token);
             var catalog = await GetAgentsAsync(deadline.Token);
             var names = catalog.ToDictionary(a => a.idAgente, a => a.nome);
-            var request = new CriarOrquestracaoRequest(new(input.Name.Trim()), input.Question, prepared, settings.Capabilities.ToList());
+            // Configuration binding appends configured array items to initialized defaults.
+            // Send each capability once; keep API validation strict for malformed callers.
+            var capabilities = settings.Capabilities.Distinct(StringComparer.Ordinal).ToList();
+            var request = new CriarOrquestracaoRequest(new(input.Name.Trim()), input.Question, prepared, capabilities);
             var accepted = await SendAsync<OrquestracaoAceita>(HttpMethod.Post, "api/v1/orquestracoes", JsonContent.Create(request), true, deadline.Token);
             if (!Guid.TryParse(accepted.idExecucao, out _)) throw new SofiaUiException("A API retornou uma identificação inválida.");
             run.ExecutionId = accepted.idExecucao; run.State = "em_andamento";
