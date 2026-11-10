@@ -21,4 +21,10 @@ O teste externo acima usa gateway/configuração reais e a API online, mas o pro
 
 ## Publicação
 
-Commit/deploy e verificação final serão registrados após a publicação. Nenhuma mudança de variável, token, dado ou esquema é necessária. Após deploy, recarregar a página e iniciar uma nova conversa para abrir circuito Blazor da revisão corrigida.
+Correção publicada no GitHub, revisão runtime `6d897cf7a5ed8ee7315dd52ebdf624e19321ec2e`. Deploy `dep-dbpkarek1f9s739e7dh0` confirmado live em 2026-11-10 16:26:27 UTC (13:26:27 America/Sao_Paulo). Nenhuma variável, token, dado, esquema ou proteção foi alterada.
+
+Após o deploy, repetido SofiaOnlineGatewayTests contra a publicação: 1 aprovado, 23 s. Execução `b29652ab-e486-4b67-b0b2-05254a672ed3`, estado parcial. Oito chamadas acompanhadas pelo gateway, seis resultados de domínio aceitos e duas falhas remotas conhecidas: AGENT_HTTP_FAILURE em NF-e e RESULT_CORRELATION_MISMATCH em DIMP. A API aceitou o envio do XML; não ocorreu a rejeição de capacidades duplicadas.
+
+A inicialização do Mongo registrou indisponibilidade transitória imediatamente após o deploy, recuperada antes do teste final. A execução e suas consultas persistentes foram concluídas com sucesso; não confundir esse evento inicial com a rejeição HTTP 400 corrigida.
+
+Instrução ao usuário: Ctrl+F5, iniciar nova conversa e reenviar o XML sintético. Isso abre circuito Blazor da revisão corrigida. A inspeção visual interativa do navegador público não foi automatizada nesta entrega; as evidências cobrem reprodução local da falha, gateway/DI real e API online após publicação.
