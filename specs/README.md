@@ -12,7 +12,7 @@ Os relatórios distinguem testes sintéticos, verificações reais e limitaçõe
 |004 — Publicação gratuita | Render Free, Neon, autenticação e migração preservada | [Spec](004-publicacao-gratuita/spec.md), [validação](004-publicacao-gratuita/validation-results.md) |
 |005 — Entrada de voz | Ditado pt-BR, revisão manual, suporte progressivo e cancelamento | [Spec](005-comando-voz/spec.md), [plano](005-comando-voz/plan.md), [tarefas](005-comando-voz/tasks.md), [validação](005-comando-voz/validation-results.md) |
 |006 — Agentes dos alunos | Cadastro aditivo, credenciais separadas e validação dos agentes publicados | [Spec](006-agentes-alunos/spec.md), [plano](006-agentes-alunos/plan.md), [tarefas](006-agentes-alunos/tasks.md), [validação](006-agentes-alunos/validation-results.md) |
-|007 — Expansão A2A | Mais seis agentes, descoberta paralela limitada e sucesso parcial | [Spec](007-expansao-catalogo-a2a/spec.md), [plano](007-expansao-catalogo-a2a/plan.md), [tarefas](007-expansao-catalogo-a2a/tasks.md) |
+|007 — Expansão A2A | Mais seis agentes, descoberta paralela limitada e sucesso parcial | [Spec](007-expansao-catalogo-a2a/spec.md), [plano](007-expansao-catalogo-a2a/plan.md), [tarefas](007-expansao-catalogo-a2a/tasks.md), [validação](007-expansao-catalogo-a2a/validation-results.md) |
 
 O backend 001 não foi reespecificado para incorporar a UI. A 002 documenta seu
 consumidor e a síntese sob demanda pelo endpoint legado, mantendo os contratos.

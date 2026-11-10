@@ -6,5 +6,7 @@
 - [x] Implementar descoberta paralela limitada e testes de ordem/concorrência.
 - [x] Validar build, regressões e execução sintética remota por agente.
 - [x] Autorizar capacidade de legislação no cliente existente do Render.
-- [ ] Atualizar GitHub e publicar a revisão validada.
-- [ ] Validar catálogo e execução parcial no Render; registrar pendências.
+- [x] Atualizar GitHub e publicar a revisão validada.
+- [x] Validar catálogo e execução parcial no Render; registrar pendências.
+
+Pendências externas/funcionais registradas na validação: publicar RPC NF-e, alinhar nome no resultado DIMP e definir os campos de contexto fiscal necessários à classificação. Essas pendências não foram tratadas como testes aprovados de análise de negócio.

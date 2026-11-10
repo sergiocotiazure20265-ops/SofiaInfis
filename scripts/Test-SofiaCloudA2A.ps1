@@ -30,7 +30,7 @@ try {
     $catalogFile = Join-Path (Split-Path $PSScriptRoot -Parent) 'SofiaInfis.Api/a2a-student-agents.json'
     $expectedIds = (Get-Content -LiteralPath $catalogFile -Raw | ConvertFrom-Json).A2A.Agents.IdAgente
     if (@($expectedIds | Where-Object { $_ -notin $catalog.items.idAgente }).Count) { throw 'A publicação não contém todos os agentes cadastrados.' }
-    if (@($catalog.items).Count -lt 2 -or @($catalog.items | Where-Object { $_.idAgente -in @('nfse-validador','agente-validacao-ecd') -and $_.elegivel }).Count -ne 2) {
+    if (@($catalog.items).Count -lt 2 -or (-not $AllowPartial -and @($catalog.items | Where-Object { $_.idAgente -in @('nfse-validador','agente-validacao-ecd') -and $_.elegivel }).Count -ne 2)) {
         $catalog | ConvertTo-Json -Depth 5
         throw 'Os dois agentes esperados não estão elegíveis a partir do Render.'
     }
