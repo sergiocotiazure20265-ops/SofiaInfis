@@ -9,7 +9,7 @@ namespace SofiaInfis.Api.Services.A2A.Transport;
 public sealed class A2AHttpClientFactory(IHttpClientFactory clients)
 {
     public HttpClient Create(AgentOptions agent) => clients.CreateClient("SofiaA2A:" + agent.IdAgente);
-    public static HttpMessageHandler Handler(AgentOptions agent, bool allowHttp)
+    public static HttpMessageHandler Handler(AgentOptions agent, bool allowHttp, ILogger? audit = null)
     {
         var sockets = new SocketsHttpHandler
         {
@@ -22,7 +22,12 @@ public sealed class A2AHttpClientFactory(IHttpClientFactory clients)
         {
             var addresses = await Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, ct);
             if (addresses.Length == 0 || addresses.Any(ip => !AgentDestinationPolicy.IsAllowedAddress(agent, ip)))
+            {
+                // Only configured agent identity/host and DNS answers; no URL query, document or credential.
+                audit?.LogWarning("A2A_DESTINATION_ADDRESS_REJECTED agent={AgentId} host={Host} addresses={Addresses}",
+                    agent.IdAgente, context.DnsEndPoint.Host, string.Join(",", addresses.Select(ip => ip.ToString())));
                 throw new A2AException("autorizacao", "DESTINATION_ADDRESS_NOT_ALLOWED", 403);
+            }
             var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
             try
             {
