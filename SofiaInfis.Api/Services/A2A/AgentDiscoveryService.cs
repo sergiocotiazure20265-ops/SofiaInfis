@@ -57,6 +57,8 @@ public sealed class AgentDiscoveryService(IAgentRegistry registry, A2AHttpClient
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { list.Add(Failed(configured, "DISCOVERY_TIMEOUT")); }
             catch (A2AException ex) { list.Add(Failed(configured, ex.Code)); }
+            catch (HttpRequestException ex) when (ex.InnerException is A2AException)
+                { list.Add(Failed(configured, ((A2AException)ex.InnerException).Code)); }
             catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException or UriFormatException or HttpRequestException)
                 { list.Add(Failed(configured, "INVALID_OR_UNAVAILABLE_CARD")); }
         }

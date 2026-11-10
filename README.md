@@ -6,6 +6,11 @@ similaridade no PostgreSQL/PgVector e extrai texto de documentos PDF, TXT e XML.
 A integração com agentes especializados via A2A 0.3.0 está implementada em módulo
 opcional, desativado por padrão, com testes locais de contrato e integração.
 
+Os agentes publicados NFS-e e ECD possuem cadastro aditivo e validação externa
+com documentos sintéticos. Para habilitação segura, credenciais e MongoDB,
+consulte o [guia dos agentes dos alunos](specs/006-agentes-alunos/quickstart.md)
+e as [evidências e pendências de publicação](specs/006-agentes-alunos/validation-results.md).
+
 ## Execução integrada (RAG, API e frontend)
 
 A execução atual usa a API RAG/OpenAI tanto para perguntas livres quanto para

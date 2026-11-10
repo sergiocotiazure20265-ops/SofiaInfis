@@ -1,0 +1,26 @@
+{
+  "A2A": {
+    "Agents": [
+      {
+        "IdAgente": "nfse-validador",
+        "ExpectedName": "Agente Validador NFS-e",
+        "CardUri": "https://agente-validador-nfse.vercel.app/.well-known/agent-card.json",
+        "AllowedDestinations": ["https://agente-validador-nfse.vercel.app/.well-known/agent-card.json", "https://agente-validador-nfse.vercel.app/a2a"],
+        "AllowedAddresses": ["216.198.79.130", "64.29.17.130", "216.198.79.194", "64.29.17.194"],
+        "AllowedCapabilities": ["analisar_documentos"],
+        "CredentialRef": "SOFIA_A2A_TOKEN",
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+      },
+      {
+        "IdAgente": "agente-validacao-ecd",
+        "ExpectedName": "Agente Validação ECD",
+        "CardUri": "https://infis-agente-validacao-ecd.vercel.app/.well-known/agent-card.json",
+        "AllowedDestinations": ["https://infis-agente-validacao-ecd.vercel.app/.well-known/agent-card.json", "https://infis-agente-validacao-ecd.vercel.app/a2a"],
+        "AllowedAddresses": ["216.198.79.2", "64.29.17.2", "216.198.79.130", "64.29.17.130"],
+        "AllowedCapabilities": ["analisar_documentos"],
+        "CredentialRef": "SOFIA_A2A_TOKEN",
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+      }
+    ]
+  }
+}

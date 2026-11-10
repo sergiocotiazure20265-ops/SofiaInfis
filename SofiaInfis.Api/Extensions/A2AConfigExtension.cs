@@ -25,6 +25,8 @@ public static class A2AConfigExtension
             var options = new A2AOptions();
             try { configuration.GetSection("A2A").Bind(options); }
             catch (InvalidOperationException) { options.Enabled = true; options.MaxEnvelopeBytes = 0; }
+            if (configuration.GetValue<bool>("A2A:IncludeStudentAgents"))
+                StudentAgentCatalog.Append(options, provider.GetRequiredService<IWebHostEnvironment>().ContentRootPath);
             options.MongoConnectionString ??= configuration.GetConnectionString("MongoDB");
             options.MongoDatabase ??= configuration["MongoDB:DatabaseName"];
             return options;

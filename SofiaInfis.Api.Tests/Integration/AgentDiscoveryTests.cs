@@ -6,6 +6,21 @@ namespace SofiaInfis.Api.Tests.Integration;
 
 public sealed class AgentDiscoveryTests(MongoFixture mongo) : IClassFixture<MongoFixture>
 {
+    [Fact]
+    public async Task Address_outside_exact_allowlist_remains_blocked_and_reports_sanitized_code()
+    {
+        await using var agent = await A2AAgentServer.StartAsync("blocked");
+        using var configuration = new A2ATestConfiguration(mongo, agent);
+        configuration.Settings["A2A:Agents:0:AllowedAddresses:0"] = "127.0.0.2";
+        await using var factory = new SofiaApiFactory(configuration.Settings);
+        using var scope = factory.Services.CreateScope();
+        var caller = new ClaimsPrincipal(new ClaimsIdentity([new Claim("capability", "analisar_documentos")], "test"));
+        var card = Assert.Single(await scope.ServiceProvider.GetRequiredService<IAgentDiscovery>().DiscoverAsync(caller, default));
+        Assert.False(card.elegivel);
+        Assert.Equal("DESTINATION_ADDRESS_NOT_ALLOWED", card.motivo);
+        Assert.Equal(0, agent.AnalysisCalls);
+    }
+
     [Theory]
     [InlineData("bad-card")]
     [InlineData("unsupported-security")]

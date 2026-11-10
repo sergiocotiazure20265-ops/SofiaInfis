@@ -9,6 +9,7 @@
     <UserSecretsId>sofia-infis-web-2026</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="../SofiaInfis.Api/a2a-student-agents.json" Link="a2a-student-agents.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Update="appsettings.example.json" CopyToPublishDirectory="Never" />
     <ProjectReference Include="../SofiaInfis.Api/SofiaInfis.Api.csproj" />
   </ItemGroup>

@@ -11,6 +11,7 @@ Os relatórios distinguem testes sintéticos, verificações reais e limitaçõe
 |003 — RAG integrado | API/Web/RAG, TXT/XML, bootstrap e containers | [Spec](003-rag-integrado/spec.md), [plano](003-rag-integrado/plan.md), [tarefas](003-rag-integrado/tasks.md), [validação](003-rag-integrado/validation-results.md) |
 |004 — Publicação gratuita | Render Free, Neon, autenticação e migração preservada | [Spec](004-publicacao-gratuita/spec.md), [validação](004-publicacao-gratuita/validation-results.md) |
 |005 — Entrada de voz | Ditado pt-BR, revisão manual, suporte progressivo e cancelamento | [Spec](005-comando-voz/spec.md), [plano](005-comando-voz/plan.md), [tarefas](005-comando-voz/tasks.md), [validação](005-comando-voz/validation-results.md) |
+|006 — Agentes dos alunos | Cadastro aditivo, credenciais separadas e validação dos agentes publicados | [Spec](006-agentes-alunos/spec.md), [plano](006-agentes-alunos/plan.md), [tarefas](006-agentes-alunos/tasks.md), [validação](006-agentes-alunos/validation-results.md) |
 
 O backend 001 não foi reespecificado para incorporar a UI. A 002 documenta seu
 consumidor e a síntese sob demanda pelo endpoint legado, mantendo os contratos.

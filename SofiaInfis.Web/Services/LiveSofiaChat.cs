@@ -17,7 +17,7 @@ public sealed class LiveSofiaChat(HttpClient http, IOptions<SofiaOptions> option
     {
         if (!settings.UseSpecialistAgents) return [];
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(TimeSpan.FromSeconds(10));
+        timeout.CancelAfter(TimeSpan.FromSeconds(Math.Clamp(settings.CatalogTimeoutSeconds, 5, 120)));
         return (await SendAsync<AgentCatalog>(HttpMethod.Get, "api/v1/agentes", null, true, timeout.Token)).items;
     }
     private sealed record AgentCatalog(AgenteDisponivel[] items);

@@ -10,6 +10,7 @@ public sealed class SofiaOptions
     public bool DemoMode { get; set; }
     public bool UseSpecialistAgents { get; set; }
     public bool AllowInternalHttp { get; set; }
+    public int CatalogTimeoutSeconds { get; set; } = 30;
 }
 public sealed record ChatFile(string Name, byte[] Content)
 {
