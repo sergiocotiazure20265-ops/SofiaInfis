@@ -1,6 +1,6 @@
 # Arquitetura atual da SOFIA — INFIS
 
-Atualização: 2026-11-09. Estado consolidado após A2A, Blazor e integração RAG (003).
+Atualização: 2026-11-10. Estado consolidado após A2A, Blazor, RAG, voz e cadastro dos agentes dos alunos (006).
 O [relatório inicial](../RELATORIO_ARQUITETURA_ATUAL_SOFIA.md) é uma baseline histórica.
 
 ## Solução e responsabilidades
@@ -113,7 +113,7 @@ a interface não os inventa. Consumo ausente permanece não informado.
 | Capacidade | Estado atual |
 |---|---|
 | Apresentação, nome, chat e anexos PDF/TXT/XML | Implementada |
-| Cliente A2A, estados e análises por agente | Implementada; agentes reais ainda não validados |
+| Cliente A2A, estados e análises por agente | Implementada; NFS-e/ECD publicados validados com documentos sintéticos, evidências e limites na feature 006 |
 | Síntese final na UI | Implementada sob demanda; depende de RAG/OpenAI reais configurados |
 | Rastreamento | Implementado por execução/etapas; não é painel completo de spans |
 | RAG, ingestão e embeddings | Implementados na API e tela /conhecimentos |

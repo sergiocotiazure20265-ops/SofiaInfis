@@ -8,8 +8,9 @@ com `Sofia__EmbeddedApi=true`. O Dockerfile é o existente em
 O frontend chama a API por loopback; não precisa de CORS nem proxy pela Vercel.
 
 **Neon Free** armazena os conhecimentos e embeddings PgVector.
-**MongoDB Atlas M0** pode ser provisionado para histórico especializado futuro,
-mas não é requisito do chat atual; A2A permanece desativado.
+**MongoDB Atlas Free** armazena execuções e análises especializadas no banco
+`sofia-a2a`. O módulo A2A e o cliente servidor Blazor foram habilitados no Render
+na entrega 006. Perguntas sem anexo continuam usando o RAG.
 SQL Server, pgAdmin e Mongo Express são ferramentas/infraestrutura locais e não
 precisam de serviços públicos para a aplicação funcionar.
 
@@ -84,7 +85,14 @@ serviço existente. Deploy automático permanece desativado.
 O conector GitHub mantinha uma conta sem escrita, mas a autenticação Git local
 permitiu publicar no repositório autorizado, confirmada por dry-run e push.
 Neon recebeu 35 registros com os mesmos IDs e embeddings, verificados após a
-transferência; origem local preservada. Atlas foi adiado por decisão do usuário.
+transferência; origem local preservada. Atlas, inicialmente adiado, foi provisionado
+na entrega 006 em projeto separado e plano gratuito. Consulte o
+[guia A2A dos alunos](../specs/006-agentes-alunos/quickstart.md) e as
+[evidências por agente](../specs/006-agentes-alunos/validation-results.md).
+
+O `render.yaml` conserva os defaults iniciais com agentes desligados para novas
+instalações. A fonte de configuração do serviço existente é seu Environment;
+uma futura migração para Blueprint deve reconciliar essas flags antes do sync.
 
 Para entrar, use `sofia` e copie `Deployment__AccessKey` na seção Environment do
 painel Render. Não compartilhe essa senha em arquivos públicos. Para repetir o

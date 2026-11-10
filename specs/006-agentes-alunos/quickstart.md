@@ -29,6 +29,8 @@ Não substituir a coleção de variáveis existente. Usar merge. Nenhuma altera�
 
 O cliente Blazor envia Bearer e X-Sofia-Access-Key em chamadas servidor-servidor. O navegador usa o acesso externo existente; nunca recebe ServiceToken. Em implantação separada, definir `Sofia__ApiBaseUrl` para a API real; no Render integrado preservar o loopback existente.
 
+Na implantação atual essas variáveis já foram cadastradas; o cliente `sofia-web` usa o índice N=1000 para preservar índices anteriores. Mongo Atlas foi provisionado no projeto separado SOFIA-INFIS, cluster gratuito sofia-a2a, banco sofia-a2a. As duas flags de habilitação estão true. Nenhuma variável pendente de preenchimento no Render; valores de senha/token ficam somente em Environment.
+
 Atlas: habilitar acesso de clientes IA/MCP na organização; criar/selecionar cluster gratuito, usuário readWrite somente no banco `sofia-a2a`, autorizar apenas a rede de saída do Render e fornecer a URI como segredo. Não usar Mongo dentro do filesystem efêmero do Render Free. Aplicar variáveis requer deploy; conferir readiness do módulo por catálogo autenticado, pois `/health` verifica RAG e não garante Mongo/A2A.
 
 ## Validação reproduzível
@@ -44,3 +46,5 @@ dotnet test SofiaInfis.slnx --no-build --filter 'FullyQualifiedName!~StudentAgen
 O script pede o segredo sem exibição e o transmite aos processos via ambiente. Somente documento ECD/TXT e NFS-e/XML fictícios são enviados aos destinos previamente aprovados pelo módulo. Não aceita arquivo real por parâmetro. `artifacts/student-agents-live.json` guarda evidência sanitizada; arquivos em artifacts são ignorados pelo Git. O teste externo é ignorado em execuções normais para não depender de disponibilidade ou credenciais dos alunos.
 
 No ambiente publicado, testar GET `/api/v1/agentes`, POST `/api/v1/orquestracoes`, GET execução/resultados e cancelamento de uma execução sintética. Usar os dois headers distintos acima. Confirmar no navegador catálogo, disponibilidade, contribuições individuais e estado da análise. Não declarar concluído só pelo teste local com Vercel.
+
+Teste reproduzível da API publicada: `./scripts/Test-SofiaCloudA2A.ps1`. Ele solicita Deployment AccessKey e Sofia ServiceToken separadamente em prompts ocultos, usa fixtures fixas sintéticas, consulta resultados e cancela uma segunda execução. Não fornece arquivo real por parâmetro. Report sanitizado em artifacts/student-agents-cloud.json.

@@ -19,6 +19,10 @@ Consultas A e AAAA executadas a partir deste computador. AAAA não retornou ende
 
 Na primeira tentativa a lista inicial ficou desatualizada durante a rotação DNS, e o módulo bloqueou as conexões. Após confirmar e acrescentar os endereços novos, o fluxo real passou. Novos endereços/regiões exigem revisão; o teste local não comprova o DNS do Render.
 
+Na execução no Render em 2026-11-10 15:30 UTC, o transporte protegido observou NFS-e `216.198.79.131,64.29.17.131` e ECD `216.198.79.195,64.29.17.195`. O diagnóstico `A2A_DESTINATION_ADDRESS_REJECTED` registrou somente ID público do agente, hostname configurado e resposta DNS. Esses endereços públicos foram acrescentados individualmente após observar o bloqueio; nenhuma faixa foi liberada e a requisição recusada não transmitiu documentos.
+
+Na rodada seguinte o Render observou ambos em `216.198.79.67,64.29.17.67`. Consultas Google Public DNS com contexto EDNS das redes de saída autorizadas confirmaram para NFS-e os pares terminados em .195 (sem contexto regional), .67 (74.220.49.0/24) e .3 (74.220.57.0/24); para ECD confirmaram .131 (sem contexto e 74.220.57.0/24) e .67 (74.220.49.0/24). Cloudflare confirmou os pares .194 NFS-e e .2 ECD. Somente respostas efetivamente observadas por agente foram acrescentadas; não presumimos que todos os IPs de um domínio se aplicam ao outro.
+
 O primeiro card NFS-e ainda declarava apiKey/X-Api-Key. Durante o trabalho, o deploy externo mudou para Bearer; a nova rodada passou sem mudar a política de autenticação da SOFIA. Na verificação final ambos retornaram protocolo 0.3.0, JSONRPC, nome exato, RPC HTTPS esperado, modos text/plain, skill analisar_documentos e segurança HTTP Bearer reconhecida pela implementação.
 
 ## Autenticação remota
@@ -52,14 +56,39 @@ NFS-e recebe também o TXT ECD porque ambos declaram a capacidade genérica anal
 - Build .NET aprovado, 0 erros. Avisos NU1902/NU1903 preexistentes em Pkcs 9.0.18 permanecem.
 - Suíte completa sem opt-in externo: 92 aprovados, 0 falhas, 50 s. Inclui dois agentes simulados, sucesso parcial, autenticação/permissões/ownership, correlação, cancelamento, persistência e regressão RAG/Web.
 - Após ajustes finais: 12 testes de catálogo, segurança e Web aprovados, 8 s.
+- Regressão final após diagnóstico DNS: 93 testes .NET aprovados, zero falhas, 36 s; 12 testes JavaScript de voz aprovados. Casos adicionais de política de saída/privacidade/descoberta: 10 aprovados; bloqueio de IP não autorizado confirmado.
 - Navegador real, Web local sem DemoMode: ambos os agentes disponíveis no catálogo; envio de TXT fictício; duas contribuições exibidas e expandidas, ECD concluído e NFS-e parcial com achado e evidências. Execução UI `395c055c-bf29-4d00-84a3-01e2d300abf1`. Não acionada síntese OpenAI. Prévia encerrada após o teste.
 
 ## Render e pendências
 
 No serviço `srv-dbphv12jnfac739g79o0` do workspace confirmado foram cadastrados por merge: segredo de saída SOFIA_A2A_TOKEN, token independente Sofia__ServiceToken e seu hash, cliente sofia-web no índice 1000, quatro permissões, capacidade analisar_documentos, IncludeStudentAgents=true e MongoDatabase=sofia-a2a. Valores sensíveis não são reproduzidos aqui. Configurações existentes de acesso, RAG e OpenAI preservadas.
 
-O Atlas recusou MCP porque ambas as organizações bloqueavam clientes de IA. Aberto no navegador interno o painel Organization Settings → App Connections → AI Clients; opção “Allow users to connect AI clients” localizada para o responsável habilitar.
+O Atlas inicialmente recusou MCP porque ambas as organizações bloqueavam clientes de IA. O responsável habilitou “Allow users to connect AI clients” no painel aberto no Codex, e o conector passou a acessar a organização `5df510ddcf09a270a619c94d`.
 
-Pendente: URI de Mongo Atlas persistente com usuário limitado/rede autorizada em `A2A__MongoConnectionString`; após validar armazenamento, definir `A2A__Enabled=true` e `Sofia__UseSpecialistAgents=true` e publicar. As flags permanecem desligadas enquanto faltar essa dependência. Não usar URI local ou disco efêmero do Render como substituto.
+Criado projeto separado `SOFIA-INFIS` (`6af335cc9aa190c17fa1f8de`), cluster gratuito `sofia-a2a`, AWS US_EAST_1, MongoDB 8.0.37. Usuário `sofia_app` restrito a readWrite no banco `sofia-a2a` e ao cluster. URI com TLS armazenada somente em `A2A__MongoConnectionString` no Render; habilitados `A2A__Enabled=true` e `Sofia__UseSpecialistAgents=true`. Nenhuma pendência de cadastro de variáveis no painel.
 
-Ainda pendentes os testes de DNS/descoberta/RPC a partir do Render, consulta/cancelamento e interface da versão publicada. A integração cloud não é declarada concluída com base nas evidências locais acima.
+No Atlas foram autorizadas somente as redes de saída `74.220.49.0/24` e `74.220.57.0/24`, verificadas no painel do serviço Render. A revisão automática inicialmente rejeitou a ampliação de acesso por serem redes compartilhadas; o responsável aprovou explicitamente essas duas redes após explicação do alcance. Não foi liberado 0.0.0.0/0. TLS e autenticação do usuário limitado continuam obrigatórios. As organizações/projetos anteriores foram preservados.
+
+## Validação no Render concluída para API e agentes
+
+Revisão runtime `c678f2016110b775d75e2f586a92ff0497ab2091`, deploy `dep-dbpjjv2jnfac739kakvg`, confirmado live em 2026-11-10 15:37:22 UTC. Comando `./scripts/Test-SofiaCloudA2A.ps1` executado contra `https://sofia-infis.onrender.com`, com duas credenciais de entrada distintas da chave compartilhada de saída. Credenciais recebidas por prompt protegido.
+
+Às 15:38:46 UTC, o teste confirmou:
+
+- Sem token de serviço ou com token incorreto: 401 mesmo com a chave externa de acesso correta.
+- Catálogo autenticado retornou ambos elegíveis com capacidade analisar_documentos. A inicialização de armazenamento estava pronta, não apenas health do RAG.
+- POST/consulta de execução e consulta de cada análise funcionaram no serviço publicado, com persistência no Atlas. Texto ECD e XML NFS-e inteiramente sintéticos.
+- Execução `c5becf4b-a487-441c-864e-5b340043007b`, estado agregado parcial, resultados de ambos aceitos pelo cliente Task/Artifact e pelo validador de domínio da SOFIA.
+- ECD: status parcial, 1 achado, idSolicitacao `b9854091-e4b7-4175-a438-6a357326c18e`.
+- NFS-e: status parcial, 2 achados, idSolicitacao `bcef2aae-0c78-4d6e-a855-8b1840f8241e`.
+- Ambos preservaram idExecucao/idSolicitacao, identidade e referências documentais. Parcial é resultado de domínio válido para a fixture mista; não foi tratado como falha técnica nem certificado de conformidade.
+- Segunda execução sintética `89e3ef5b-2566-43d8-b518-444b2fba3f79`: cancelada, registroConfirmado=true. Permissões de listagem, execução, consulta e cancelamento verificadas no Render.
+- Sem novos eventos A2A_STORAGE_UNAVAILABLE ou DESTINATION_ADDRESS_REJECTED após a revisão de DNS na janela final consultada.
+
+Smoke público adicional `Test-SofiaCloud.ps1 -TestVoiceAssets`: health200, anônimo401, frontend autenticado200, conhecimentos200, Swagger válido e módulos de voz publicados. Não houve chamada OpenAI. API e frontend locais reconstruídos/iniciados no Docker, volumes preservados; sete serviços em execução.
+
+## Limite da verificação visual pública
+
+O catálogo e os resultados foram verificados em navegador real no frontend local usando os agentes publicados, conforme evidência acima. A navegação automatizada ao frontend público encontrou a autenticação HTTP Basic; a tentativa de usar o Chrome já autenticado foi interrompida pelo controle de computador porque não conseguiu determinar a URL ativa com confiança. Nenhuma proteção foi removida para automatizar esse acesso. Portanto, o HTTP do frontend público e a API/cloud A2A estão validados, mas a inspeção visual interativa da versão pública permanece pendente. Não confundir isso com pendência de configuração no Render.
+
+Novos IPs da Vercel ainda podem exigir revisão futura da lista exata. Para novos alunos, seguir quickstart e manter IDs únicos, referências de credencial, revisão de card/capacidades e testes externos. A capacidade genérica atual envia os documentos a ambos os especialistas; distinguir formatos requer evolução explícita do roteamento. A resposta ECD exibiu referência a validação SAMPLE: a integração técnica não prova a implementação de todas as regras ECD pelo aluno.

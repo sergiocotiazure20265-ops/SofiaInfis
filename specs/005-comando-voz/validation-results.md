@@ -26,10 +26,15 @@ Data: 2026-11-10, America/Sao_Paulo.
 
 ## Publicação
 
-Preparada para o mesmo serviço Render Free da entrega 004, preservando as variáveis
-de ambiente e a autenticação existentes. A verificação pública usa
-`scripts/Test-SofiaCloud.ps1 -TestVoiceAssets`, sem chamadas OpenAI ou captura de
-áudio. Commit, deploy e resultados finais serão registrados após confirmação.
+Publicada no mesmo serviço Render Free da entrega 004, preservando as variáveis
+de ambiente e a autenticação existentes. Commit `f52574962cdf6e7ce22465f5af557152ca09236c`,
+deploy `dep-dbpine5bedkc738s7fpg` confirmado live em 2026-11-10.
+Verificação pública final durante a entrega 006 com
+`scripts/Test-SofiaCloud.ps1 -TestVoiceAssets`: health 200, anônimo 401,
+frontend autenticado 200, conhecimentos 200, Swagger válido, upload documentado,
+voice-input.mjs publicado como JavaScript e importado pelo compositor.
+Nenhuma chamada OpenAI ou captura de áudio nesse teste. Regressão JavaScript
+repetida: 12 aprovados, zero falhas.
 
 ## Limites
 

@@ -6,4 +6,4 @@
 - [x] Cobrir comportamento de voz com reconhecedor simulado.
 - [x] Validar compilação, regressões Web e layout no navegador.
 - [x] Atualizar documentação e evidências de validação.
-- [ ] Publicar código no GitHub e verificar nova versão live no Render.
+- [x] Publicar código no GitHub e verificar nova versão live no Render.
