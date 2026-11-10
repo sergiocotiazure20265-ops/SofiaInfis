@@ -7,6 +7,49 @@ namespace SofiaInfis.Api.Tests.Integration;
 public sealed class AgentDiscoveryTests(MongoFixture mongo) : IClassFixture<MongoFixture>
 {
     [Fact]
+    public async Task Eight_cards_are_discovered_with_bounded_parallelism_and_stable_registry_order()
+    {
+        var servers = new List<A2AAgentServer>();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstBatch = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var active = 0;
+        var exceeded = 0;
+        try
+        {
+            for (var i = 0; i < 8; i++)
+            {
+                var server = await A2AAgentServer.StartAsync("student-" + i);
+                server.BeforeCard = async ct =>
+                {
+                    var current = Interlocked.Increment(ref active);
+                    if (current > 3) Interlocked.Exchange(ref exceeded, 1);
+                    if (current == 3) firstBatch.TrySetResult();
+                    try { await release.Task.WaitAsync(ct); }
+                    finally { Interlocked.Decrement(ref active); }
+                };
+                servers.Add(server);
+            }
+            using var configuration = new A2ATestConfiguration(mongo, servers.ToArray());
+            await using var factory = new SofiaApiFactory(configuration.Settings);
+            using var scope = factory.Services.CreateScope();
+            var caller = new ClaimsPrincipal(new ClaimsIdentity([new Claim("capability", "analisar_documentos")], "test"));
+            var discovery = scope.ServiceProvider.GetRequiredService<IAgentDiscovery>().DiscoverAsync(caller, default);
+            await firstBatch.Task.WaitAsync(TimeSpan.FromSeconds(4));
+            Assert.Equal(3, Volatile.Read(ref active));
+            release.TrySetResult();
+            var cards = await discovery;
+            Assert.Equal(0, Volatile.Read(ref exceeded));
+            Assert.Equal(servers.Select(x => x.Id), cards.Select(x => x.idAgente));
+            Assert.All(cards, card => Assert.True(card.elegivel, card.motivo));
+        }
+        finally
+        {
+            release.TrySetResult();
+            foreach (var server in servers) await server.DisposeAsync();
+        }
+    }
+
+    [Fact]
     public async Task Address_outside_exact_allowlist_remains_blocked_and_reports_sanitized_code()
     {
         await using var agent = await A2AAgentServer.StartAsync("blocked");

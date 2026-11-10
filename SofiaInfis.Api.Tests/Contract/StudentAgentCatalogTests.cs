@@ -14,7 +14,7 @@ public sealed class StudentAgentCatalogTests
         var options = new A2AOptions { Agents = [new() { IdAgente = "existing" }, existing] };
         StudentAgentCatalog.Append(options, Root);
         StudentAgentCatalog.Append(options, Root);
-        Assert.Equal(3, options.Agents.Length);
+        Assert.Equal(9, options.Agents.Length);
         Assert.Same(existing, options.Agents.Single(x => x.IdAgente == existing.IdAgente));
     }
 
@@ -23,12 +23,13 @@ public sealed class StudentAgentCatalogTests
     {
         var options = new A2AOptions();
         StudentAgentCatalog.Append(options, Root);
-        Assert.Equal(2, options.Agents.Length);
+        Assert.Equal(8, options.Agents.Length);
         Assert.All(options.Agents, agent =>
         {
             Assert.Equal("SOFIA_A2A_TOKEN", agent.CredentialRef);
             Assert.Equal(agent.CredentialRef, agent.DiscoveryCredentialRef);
-            Assert.Equal(["analisar_documentos"], agent.AllowedCapabilities);
+            Assert.Equal(agent.IdAgente == "agente-monitoramento-legislacao"
+                ? ["analisar_documentos", "monitorar_legislacao_tributaria"] : ["analisar_documentos"], agent.AllowedCapabilities);
             Assert.Equal(2, agent.AllowedDestinations.Length);
             Assert.True(AgentDestinationPolicy.IsAllowed(agent, new Uri(agent.CardUri), false));
             Assert.All(agent.AllowedDestinations, uri => Assert.StartsWith("https://", uri));

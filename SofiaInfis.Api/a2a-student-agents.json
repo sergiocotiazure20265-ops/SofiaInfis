@@ -5,9 +5,27 @@
         "IdAgente": "nfse-validador",
         "ExpectedName": "Agente Validador NFS-e",
         "CardUri": "https://agente-validador-nfse.vercel.app/.well-known/agent-card.json",
-        "AllowedDestinations": ["https://agente-validador-nfse.vercel.app/.well-known/agent-card.json", "https://agente-validador-nfse.vercel.app/a2a"],
-        "AllowedAddresses": ["216.198.79.130", "64.29.17.130", "216.198.79.194", "64.29.17.194", "216.198.79.131", "64.29.17.131", "216.198.79.67", "64.29.17.67", "216.198.79.195", "64.29.17.195", "216.198.79.3", "64.29.17.3"],
-        "AllowedCapabilities": ["analisar_documentos"],
+        "AllowedDestinations": [
+          "https://agente-validador-nfse.vercel.app/.well-known/agent-card.json",
+          "https://agente-validador-nfse.vercel.app/a2a"
+        ],
+        "AllowedAddresses": [
+          "216.198.79.130",
+          "216.198.79.131",
+          "216.198.79.194",
+          "216.198.79.195",
+          "216.198.79.3",
+          "216.198.79.67",
+          "64.29.17.130",
+          "64.29.17.131",
+          "64.29.17.194",
+          "64.29.17.195",
+          "64.29.17.3",
+          "64.29.17.67"
+        ],
+        "AllowedCapabilities": [
+          "analisar_documentos"
+        ],
         "CredentialRef": "SOFIA_A2A_TOKEN",
         "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
       },
@@ -15,9 +33,188 @@
         "IdAgente": "agente-validacao-ecd",
         "ExpectedName": "Agente Validação ECD",
         "CardUri": "https://infis-agente-validacao-ecd.vercel.app/.well-known/agent-card.json",
-        "AllowedDestinations": ["https://infis-agente-validacao-ecd.vercel.app/.well-known/agent-card.json", "https://infis-agente-validacao-ecd.vercel.app/a2a"],
-        "AllowedAddresses": ["216.198.79.2", "64.29.17.2", "216.198.79.130", "64.29.17.130", "216.198.79.195", "64.29.17.195", "216.198.79.67", "64.29.17.67", "216.198.79.131", "64.29.17.131"],
-        "AllowedCapabilities": ["analisar_documentos"],
+        "AllowedDestinations": [
+          "https://infis-agente-validacao-ecd.vercel.app/.well-known/agent-card.json",
+          "https://infis-agente-validacao-ecd.vercel.app/a2a"
+        ],
+        "AllowedAddresses": [
+          "216.198.79.130",
+          "216.198.79.131",
+          "216.198.79.194",
+          "216.198.79.195",
+          "216.198.79.2",
+          "216.198.79.66",
+          "216.198.79.67",
+          "64.29.17.130",
+          "64.29.17.131",
+          "64.29.17.194",
+          "64.29.17.195",
+          "64.29.17.2",
+          "64.29.17.66",
+          "64.29.17.67"
+        ],
+        "AllowedCapabilities": [
+          "analisar_documentos"
+        ],
+        "CredentialRef": "SOFIA_A2A_TOKEN",
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+      },
+      {
+        "IdAgente": "agente-parecer-tributario",
+        "ExpectedName": "Agente Parecer Tributário",
+        "CardUri": "https://agente-parecer-tributario.vercel.app/.well-known/agent-card.json",
+        "AllowedDestinations": [
+          "https://agente-parecer-tributario.vercel.app/.well-known/agent-card.json",
+          "https://agente-parecer-tributario.vercel.app/a2a"
+        ],
+        "AllowedAddresses": [
+          "216.198.79.130",
+          "216.198.79.131",
+          "216.198.79.194",
+          "216.198.79.3",
+          "216.198.79.67",
+          "64.29.17.130",
+          "64.29.17.131",
+          "64.29.17.194",
+          "64.29.17.3",
+          "64.29.17.67"
+        ],
+        "AllowedCapabilities": [
+          "analisar_documentos"
+        ],
+        "CredentialRef": "SOFIA_A2A_TOKEN",
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+      },
+      {
+        "IdAgente": "agente-ecf",
+        "ExpectedName": "Agente ECF",
+        "CardUri": "https://agente-ecf-agente.vercel.app/.well-known/agent-card.json",
+        "AllowedDestinations": [
+          "https://agente-ecf-agente.vercel.app/.well-known/agent-card.json",
+          "https://agente-ecf-agente.vercel.app/a2a"
+        ],
+        "AllowedAddresses": [
+          "216.198.79.131",
+          "216.198.79.194",
+          "216.198.79.195",
+          "216.198.79.3",
+          "64.29.17.131",
+          "64.29.17.194",
+          "64.29.17.195",
+          "64.29.17.3"
+        ],
+        "AllowedCapabilities": [
+          "analisar_documentos"
+        ],
+        "CredentialRef": "SOFIA_A2A_TOKEN",
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+      },
+      {
+        "IdAgente": "agente-fiscal",
+        "ExpectedName": "Agente Fiscal INFIS",
+        "CardUri": "https://agente-classificacao-fiscal.vercel.app/.well-known/agent-card.json",
+        "AllowedDestinations": [
+          "https://agente-classificacao-fiscal.vercel.app/.well-known/agent-card.json",
+          "https://agente-classificacao-fiscal.vercel.app/a2a"
+        ],
+        "AllowedAddresses": [
+          "216.198.79.130",
+          "216.198.79.131",
+          "216.198.79.195",
+          "216.198.79.2",
+          "216.198.79.3",
+          "64.29.17.130",
+          "64.29.17.131",
+          "64.29.17.195",
+          "64.29.17.2",
+          "64.29.17.3"
+        ],
+        "AllowedCapabilities": [
+          "analisar_documentos"
+        ],
+        "CredentialRef": "SOFIA_A2A_TOKEN",
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+      },
+      {
+        "IdAgente": "agente-auditoria-nfe",
+        "ExpectedName": "AgenteAuditoriaNFe",
+        "CardUri": "https://agente-auditoria-nfe.vercel.app/.well-known/agent-card.json",
+        "AllowedDestinations": [
+          "https://agente-auditoria-nfe.vercel.app/.well-known/agent-card.json",
+          "https://agente-auditoria-nfe.vercel.app/a2a/auditoria-nfe"
+        ],
+        "AllowedAddresses": [
+          "216.198.79.131",
+          "216.198.79.194",
+          "216.198.79.195",
+          "216.198.79.66",
+          "216.198.79.67",
+          "64.29.17.131",
+          "64.29.17.194",
+          "64.29.17.195",
+          "64.29.17.66",
+          "64.29.17.67"
+        ],
+        "AllowedCapabilities": [
+          "analisar_documentos"
+        ],
+        "CredentialRef": "SOFIA_A2A_TOKEN",
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+      },
+      {
+        "IdAgente": "agente-dimp",
+        "ExpectedName": "Agente Fiscal DIMP INFIS",
+        "CardUri": "https://agente-dimp-demo.vercel.app/.well-known/agent-card.json",
+        "AllowedDestinations": [
+          "https://agente-dimp-demo.vercel.app/.well-known/agent-card.json",
+          "https://agente-dimp-demo.vercel.app/a2a"
+        ],
+        "AllowedAddresses": [
+          "216.198.79.131",
+          "216.198.79.194",
+          "216.198.79.195",
+          "216.198.79.2",
+          "216.198.79.3",
+          "216.198.79.66",
+          "216.198.79.67",
+          "64.29.17.131",
+          "64.29.17.194",
+          "64.29.17.195",
+          "64.29.17.2",
+          "64.29.17.3",
+          "64.29.17.66",
+          "64.29.17.67"
+        ],
+        "AllowedCapabilities": [
+          "analisar_documentos"
+        ],
+        "CredentialRef": "SOFIA_A2A_TOKEN",
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+      },
+      {
+        "IdAgente": "agente-monitoramento-legislacao",
+        "ExpectedName": "Agente de Monitoramento da Legislação e Jurisprudência",
+        "CardUri": "https://agent-monitoramento-legislacao.vercel.app/.well-known/agent-card.json",
+        "AllowedDestinations": [
+          "https://agent-monitoramento-legislacao.vercel.app/.well-known/agent-card.json",
+          "https://agent-monitoramento-legislacao.vercel.app/a2a"
+        ],
+        "AllowedAddresses": [
+          "216.198.79.130",
+          "216.198.79.195",
+          "216.198.79.3",
+          "216.198.79.66",
+          "216.198.79.67",
+          "64.29.17.130",
+          "64.29.17.195",
+          "64.29.17.3",
+          "64.29.17.66",
+          "64.29.17.67"
+        ],
+        "AllowedCapabilities": [
+          "analisar_documentos",
+          "monitorar_legislacao_tributaria"
+        ],
         "CredentialRef": "SOFIA_A2A_TOKEN",
         "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
       }

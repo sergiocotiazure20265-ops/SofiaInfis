@@ -10,6 +10,8 @@ Os agentes publicados NFS-e e ECD possuem cadastro aditivo e validação externa
 com documentos sintéticos. Para habilitação segura, credenciais e MongoDB,
 consulte o [guia dos agentes dos alunos](specs/006-agentes-alunos/quickstart.md)
 e as [evidências e pendências de publicação](specs/006-agentes-alunos/validation-results.md).
+O catálogo foi ampliado para oito agentes na [entrega 007](specs/007-expansao-catalogo-a2a/spec.md),
+com descoberta paralela limitada e [resultados individuais](specs/007-expansao-catalogo-a2a/validation-results.md).
 
 ## Execução integrada (RAG, API e frontend)
 

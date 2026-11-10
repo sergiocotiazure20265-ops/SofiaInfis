@@ -20,6 +20,7 @@ internal sealed class A2AAgentServer : IAsyncDisposable
     public int CancelCalls;
     public string Mode { get; set; } = "success";
     public TimeSpan Delay { get; set; }
+    public Func<CancellationToken, Task>? BeforeCard { get; set; }
     public string Token { get; } = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
     public ConcurrentQueue<JsonObject> Received { get; } = new();
     private A2AAgentServer(string id)
@@ -29,7 +30,10 @@ internal sealed class A2AAgentServer : IAsyncDisposable
         builder.Logging.ClearProviders();
         builder.WebHost.ConfigureKestrel(k => k.Listen(IPAddress.Loopback, 0));
         _app = builder.Build();
-        _app.MapGet("/.well-known/agent-card.json", () => Results.Json(new
+        _app.MapGet("/.well-known/agent-card.json", async (HttpContext context) =>
+        {
+            if (BeforeCard is not null) await BeforeCard(context.RequestAborted);
+            return Results.Json(new
         {
             protocolVersion = Mode == "bad-card" ? "1.0" : "0.3.0",
             preferredTransport = "JSONRPC", name = Id, version = "1.0.0", description = "Synthetic specialist",
@@ -39,7 +43,8 @@ internal sealed class A2AAgentServer : IAsyncDisposable
             skills = new[] { new { id = "analisar_documentos", name = "Analysis", description = "Synthetic analysis", tags = new[] { "test" } } },
             securitySchemes = new { sofiaService = new { type = "http", scheme = "bearer" } },
             security = new[] { Mode == "unsupported-security" ? new Dictionary<string, string[]> { ["sofiaService"] = [], ["unsupportedOAuth"] = [] } : new Dictionary<string, string[]> { ["sofiaService"] = [] } }
-        }));
+            });
+        });
         _app.MapPost("/rpc", (Delegate)HandleAsync);
     }
     public static async Task<A2AAgentServer> StartAsync(string id = "agente-fiscal")
