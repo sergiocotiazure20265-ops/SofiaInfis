@@ -47,11 +47,18 @@ As seções A2A abaixo documentam o módulo opcional e sua infraestrutura.
 
 ## Publicação em nuvem
 
-O deploy gratuito está preparado em [render.yaml](render.yaml), com Blazor e API
-no mesmo processo, Neon/PgVector e senha de acesso. Consulte o
-[guia de publicação](docs/DEPLOY_GRATUITO.md). Criar arquivos de deploy não significa
-que a aplicação já esteja publicada; os recursos e a migração dependem das contas
-autorizadas e de um repositório GitHub com permissão de escrita.
+A aplicação foi publicada no Render Free, com Blazor e API no mesmo processo e
+35 conhecimentos preservados no Neon/PgVector:
+
+- [Frontend SOFIA](https://sofia-infis.onrender.com/).
+- [Swagger da API](https://sofia-infis.onrender.com/swagger).
+- [Base de conhecimentos](https://sofia-infis.onrender.com/conhecimentos).
+
+O acesso exige usuário `sofia` e a senha de runtime `Deployment__AccessKey`,
+disponível no ambiente do serviço no painel Render. Segredos não são incluídos
+no repositório. O plano gratuito pode hibernar por inatividade; OpenAI continua
+consumindo a chave configurada. Consulte o [guia](docs/DEPLOY_GRATUITO.md) e a
+[validação pública](specs/004-publicacao-gratuita/validation-results.md).
 
 ## Estado atual
 

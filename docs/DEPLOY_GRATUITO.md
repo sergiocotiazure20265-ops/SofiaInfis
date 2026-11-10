@@ -23,7 +23,7 @@ continua disponível.
 ## Configuração no provedor
 
 - `ConnectionStrings__PostgreSQL`: formato Npgsql, por exemplo
-  `Host=HOST_NEON;Port=5432;Database=neondb;Username=USUARIO;Password=SENHA;SSL Mode=VerifyFull;Timeout=30;Maximum Pool Size=10`.
+  `Host=HOST_NEON;Port=5432;Database=sofia_infis;Username=sofia_app;Password=SENHA;SSL Mode=VerifyFull;GSS Encryption Mode=Disable;Timeout=30;Maximum Pool Size=10`.
   Use o endpoint direto na inicialização/migração. Não inclua o prefixo `psql`.
 - `OpenAI__ApiKey`: segredo de runtime. Nunca incluir em Git, imagem ou frontend.
 - `Deployment__AccessKey`: senha aleatória gerada pelo Render. Usuário HTTP Basic:
@@ -65,12 +65,29 @@ Referências verificadas durante a preparação:
 - [Atlas Free](https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/)
 - [Runtimes Vercel](https://vercel.com/docs/functions/runtimes)
 
-## Estado desta preparação
+## Publicação concluída
 
-As contas Render, Neon e MongoDB Atlas foram sugeridas para conexão. Nenhum recurso
-cloud, transferência da base ou URL pública é declarado criado até existir
-confirmação pelos provedores. O checkout não possuía remoto Git; o repositório
-`sergiocotiazure20265-ops/SofiaInfis` localizado pelo conector concede apenas leitura
-à conta conectada. Resolver acesso ao repositório antes de enviar fontes ou ativar
-o Blueprint. Preservar esta seção como registro da preparação; registrar publicação
-efetiva e validação em um relatório separado quando concluídas.
+Publicada em 2026-11-10:
+
+- Frontend: https://sofia-infis.onrender.com/
+- Swagger: https://sofia-infis.onrender.com/swagger
+- Conhecimentos: https://sofia-infis.onrender.com/conhecimentos
+- Painel: https://dashboard.render.com/web/srv-dbphv12jnfac739g79o0
+- Código: https://github.com/sergiocotiazure20265-ops/SofiaInfis
+
+O serviço foi criado por MCP no workspace confirmado pelo usuário, em plano
+`free`, com Dockerfile da Web e variáveis protegidas autorizadas expressamente.
+O arquivo `render.yaml` fica como referência reproduzível; não há Blueprint
+ativo gerenciando esse serviço. Alterações operacionais atuais são feitas no
+serviço existente. Deploy automático permanece desativado.
+
+O conector GitHub mantinha uma conta sem escrita, mas a autenticação Git local
+permitiu publicar no repositório autorizado, confirmada por dry-run e push.
+Neon recebeu 35 registros com os mesmos IDs e embeddings, verificados após a
+transferência; origem local preservada. Atlas foi adiado por decisão do usuário.
+
+Para entrar, use `sofia` e copie `Deployment__AccessKey` na seção Environment do
+painel Render. Não compartilhe essa senha em arquivos públicos. Para repetir o
+teste público (incluindo chamadas OpenAI reais), execute
+`./scripts/Test-SofiaCloud.ps1 -TestOpenAI` e forneça a senha no prompt oculto.
+As evidências e limites estão no relatório de validação da especificação 004.

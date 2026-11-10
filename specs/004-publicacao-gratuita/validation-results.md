@@ -53,11 +53,43 @@ Render confirmado `tea-dbphd5k9v7es73bthsqg`. As conexões de runtime podem ser
 obtidas pelo conector Neon com o role limitado e devem ser fornecidas somente ao
 ambiente do serviço, sem armazenamento em Git.
 
-## Publicação pendente
+## Publicação concluída
 
-O conector GitHub ainda retornou a conexão `sergiocotiazure20262-lang`, sem escrita.
-Entretanto, o teste `git push --dry-run` com a autenticação Git local confirmou
-acesso de publicação em `sergiocotiazure20265-ops/SofiaInfis`. O fluxo continuará
-por esse acesso Git autorizado, sem trocar o repositório nem expor credenciais.
-Nenhuma URL de aplicação pública é considerada pronta antes da confirmação do
-deploy e da verificação HTTPS.
+O conector GitHub retornou uma conta sem escrita, mas `git push --dry-run` com a
+autenticação Git local confirmou acesso ao repositório autorizado. Código publicado
+em `sergiocotiazure20265-ops/SofiaInfis`, commit executável
+`112a73cbae05c3379e49cf9f7c73f46658364abc`, com SHA remoto confirmado.
+
+Usuário autorizou expressamente guardar no Render a senha do role Neon limitado,
+a chave OpenAI local e uma senha nova de acesso à aplicação em variáveis protegidas.
+Nenhum desses valores consta no Git ou no HTML.
+
+- Serviço: `srv-dbphv12jnfac739g79o0`, plano **free**, região Virginia.
+- Deploy: `dep-dbphv1qjnfac739g7cb0`, estado **live** confirmado pelo provedor.
+- URL: https://sofia-infis.onrender.com/
+- Swagger: https://sofia-infis.onrender.com/swagger
+- Deploy automático desativado. Nenhum plano pago, disco persistente ou Atlas
+  foi provisionado.
+- `scripts/Test-SofiaCloud.ps1 -TestOpenAI`: `/health` 200, acesso anônimo 401,
+  frontend e conhecimentos autenticados 200, Swagger válido com upload documental.
+- Busca semântica pública: 3 resultados. Pergunta pública com TXT e XML sintéticos:
+  2 arquivos processados, 3 fontes RAG, valores de controle confirmados, 1.884
+  tokens de chat informados pelo provedor. Execução
+  `96935e5c-f116-49bd-a84b-368a87a8d329`.
+- O teste não ingere referências sintéticas na base pública. A contagem dos
+  conhecimentos continua em 35. Nenhum especialista externo foi chamado.
+- O health check do serviço criado por MCP usa o padrão TCP da plataforma;
+  `/health` verifica prontidão do banco e foi confirmado por HTTPS. O Blueprint
+  de referência também permite configurar o caminho HTTP em instalações futuras.
+- O primeiro teste detectou o aviso de biblioteca Kerberos ausente do Npgsql 10.
+  A conexão recebeu `GSS Encryption Mode=Disable`, preservando
+  `SSL Mode=VerifyFull`, conforme documentação do driver para containers sem
+  Kerberos. O Render iniciou o redeploy de configuração
+  `dep-dbpi20dg1s2s738ga7t0` automaticamente, sem outro trigger manual.
+- Redeploy de configuração confirmado **live**. A verificação HTTPS final repetiu
+  health 200, acesso anônimo 401 e frontend/conhecimentos/Swagger autenticados
+  válidos, sem novas chamadas OpenAI. Logs de aplicação posteriores ao novo deploy
+  não retornaram erros na consulta final.
+
+Entrar com usuário `sofia`; senha disponível em `Deployment__AccessKey` no ambiente
+do serviço Render. Não registrar a senha em documentação ou mensagens.
