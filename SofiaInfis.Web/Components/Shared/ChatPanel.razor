@@ -10,13 +10,7 @@
         <span class="sidebar-label">NESTA CONVERSA</span>
         @if (_runs.Count == 0) { <p class="sidebar-empty">Sua próxima boa pergunta<br />começa aqui.</p> }
         @foreach (var run in _runs.TakeLast(6).Reverse()) { <button class="conversation-link" @onclick="() => ScrollTo(run)"><UiIcon Name="chat" Size="17" /><span>@run.Question</span></button> }
-        <div class="sidebar-agents"><span class="sidebar-label">INTELIGÊNCIA EM CONJUNTO</span>
-        @if (_catalog.Count > 0)
-        {
-            @foreach (var agent in _catalog) { <div class="catalog-agent @AgentPalette.ClassFor(agent.idAgente)"><AgentIdentity Id="@agent.idAgente" Name="@agent.nome" Developer="@agent.desenvolvedor" /><span class="availability @(agent.elegivel ? "available" : "")" title="@(agent.elegivel ? "Disponível para análise" : "Indisponível")"></span></div> }
-        }
-        else { <p class="sidebar-empty">SOFIA consulta sua base de conhecimentos<br />e analisa os documentos enviados.</p> }
-        </div>
+        <SidebarAgents Catalog="_catalog" />
         <div class="sidebar-bottom"><div class="sidebar-promise"><UiIcon Name="shield" Size="20" /><p>Mais clareza.<br /><strong>Em cada decisão.</strong></p></div>
             @if (Sofia.IsDemo) { <span class="demo-note">Demonstração · dados simulados</span> }
             <div class="user-card"><span class="user-avatar">@Initial</span><div><strong>@UserName</strong><span>Sua conversa com a SOFIA</span></div><button class="icon-button" @onclick="Leave" disabled="@_busy" aria-label="Voltar à apresentação"><UiIcon Name="back" Size="16" /></button></div>

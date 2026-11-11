@@ -70,6 +70,12 @@ consumindo a chave configurada. Consulte o [guia](docs/DEPLOY_GRATUITO.md) e a
 
 ## Seleção de especialistas e rastreamento
 
+O menu lateral apresenta os dez agentes informados pela turma e os nomes completos
+de seus desenvolvedores. SPED Fiscal (Gabriel de Freitas Maurity) e SPED
+Contribuições (Vitor Guimaraes Vianna) aparecem como **Conexão pendente** enquanto
+não houver integração configurada. A listagem visual não habilita chamadas A2A;
+a disponibilidade dos agentes integrados continua vindo do catálogo da API.
+
 A SOFIA seleciona agentes pela especialidade da pergunta e pelas assinaturas do
 conteúdo dos arquivos, após validar disponibilidade e permissões A2A. A capacidade
 genérica `analisar_documentos` não envia mais a solicitação a todos. Cada agente

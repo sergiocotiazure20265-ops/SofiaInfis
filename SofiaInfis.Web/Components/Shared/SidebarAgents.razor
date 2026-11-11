@@ -1,0 +1,16 @@
+@using SofiaInfis.Api.DTOs.A2A
+<div class="sidebar-agents">
+    <span class="sidebar-label">INTELIGÊNCIA EM CONJUNTO</span>
+    @foreach (var agent in SidebarAgentDirectory.Merge(Catalog))
+    {
+        var pending = agent.motivo == SidebarAgentDirectory.PendingConnection;
+        var status = pending ? SidebarAgentDirectory.PendingConnection : agent.elegivel ? "Disponível para análise" : "Indisponível";
+        <div class="catalog-agent @AgentPalette.ClassFor(agent.idAgente)">
+            <AgentIdentity Id="@agent.idAgente" Name="@agent.nome" Developer="@agent.desenvolvedor" />
+            <span class="catalog-connection"><span class="availability @(agent.elegivel ? "available" : "")" title="@status" role="img" aria-label="@status"></span>@if (pending) { <small>@status</small> }</span>
+        </div>
+    }
+</div>
+@code {
+    [Parameter] public IReadOnlyList<AgenteDisponivel> Catalog { get; set; } = [];
+}
