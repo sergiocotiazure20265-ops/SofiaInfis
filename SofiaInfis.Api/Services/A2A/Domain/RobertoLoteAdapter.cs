@@ -91,7 +91,8 @@ public static class RobertoLoteAdapter
             ValidateObligation(item, issues);
         }
         var roots = obligations.OfType<JsonObject>().Select(x => Text(x["contribuinte"], "cnpj")).Where(x => x.Length >= 8).Select(x => x[..8]).Distinct().ToArray();
-        if (roots.Length != 1) issues.Add("Não foi identificado um único contribuinte para o lote; separe empresas de raízes diferentes.");
+        if (roots.Length == 0) issues.Add("Faltam dados normalizados que identifiquem o contribuinte do lote.");
+        else if (roots.Length > 1) issues.Add("Há contribuintes de raízes diferentes; separe as empresas em lotes distintos.");
         if (issues.Count > 0) return new(null, issues.Distinct().ToArray());
         var periods = obligations.Select(x => x!["periodo"]!).ToArray();
         var lote = new JsonObject

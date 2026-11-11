@@ -20,4 +20,34 @@ A simulação Postman existente modela o especialista fiscal genérico. A aceita
 de lote pelo Roberto não é inferida dela: schema/código oficial foram consultados,
 o adaptador foi testado, e a verificação remota será registrada abaixo.
 
-Publicação e verificação real: pendentes.
+## Publicação e verificação real
+
+Versão inicial publicada no Render em 11/11/2026: revisão
+`85b3d142027637fa0646108baa82c35ea0fab4c7`, deploy
+`dep-dbqc32uc6qcc73esn4v0`, estado `live` às 19:28:04 UTC.
+
+Evidências locais da verificação pelo chat publicado, somente com dados sintéticos:
+
+- `538bb579-178a-4f86-9bd5-21ed66ff22d1`: obrigações normalizadas NFSE e ECD;
+  os dois especialistas retornaram parciais e Roberto foi chamado na última
+  etapa. Lote aceito; parecer parcial, sem cruzamentos para esses tipos. A tela
+  identificou a autoria de Roberto e as limitações, sem certificar conformidade.
+- `e73e6000-1516-47d4-956e-01383d81a639`: arquivos brutos sem relatórios de
+  origem. Roberto não foi chamado; a SOFIA concluiu com os motivos da
+  insuficiência. Esse teste expôs mensagem ambígua sobre contribuintes, corrigida
+  para distinguir ausência de identificação de raízes efetivamente diferentes.
+
+Arquivos ignorados: `artifacts/lote-adapter/sufficient-result.json`,
+`insufficient-result.json` e `sufficient-desktop.png`. Essas evidências não
+homologam regras fiscais nem os demais agentes.
+
+Reteste da entrega em 11/11/2026: 124 testes aprovados, zero falhas ou ignorados,
+incluindo simulação Postman. Os 21 cenários do adaptador passaram novamente após
+acrescentar verificações para as mensagens de contribuinte ausente e raízes
+distintas. O teste de renderização agora usa proteção de dados efêmera e logging
+isolado, sem depender de gravação no perfil/Event Log do Windows. A primeira
+execução restrita encontrou duas falhas de permissões locais (Event Log e runtime
+Postman); a regressão com acesso ao runtime local passou. Artefatos:
+`lote-release.trx` e `lote-messages.trx` em `artifacts/lote-adapter`.
+
+Republicação do ajuste de mensagem e verificação de disponibilidade: em andamento.

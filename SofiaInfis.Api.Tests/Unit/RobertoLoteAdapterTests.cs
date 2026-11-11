@@ -56,6 +56,8 @@ public sealed class RobertoLoteAdapterTests
         var original = example.ToJsonString();
         var adapted = Adapt(Doc(example));
         Assert.False(adapted.Ready); Assert.NotEmpty(adapted.Limitations);
+        if (mode == "mixed-company")
+            Assert.Contains(adapted.Limitations, x => x.Contains("Há contribuintes de raízes diferentes"));
         Assert.Equal(original, example.ToJsonString());
     }
     [Theory]
@@ -67,6 +69,8 @@ public sealed class RobertoLoteAdapterTests
     {
         var result = Adapt(new DocumentoEntrada("doc", "documento.txt", text));
         Assert.False(result.Ready); Assert.NotEmpty(result.Limitations);
+        Assert.Contains(result.Limitations, x => x.Contains("Faltam dados normalizados que identifiquem o contribuinte"));
+        Assert.DoesNotContain(result.Limitations, x => x.Contains("raízes diferentes"));
     }
     [Fact]
     public void An_unadaptable_document_is_not_silently_dropped_from_a_valid_lote()

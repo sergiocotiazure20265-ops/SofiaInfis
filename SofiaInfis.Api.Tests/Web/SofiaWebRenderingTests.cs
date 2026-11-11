@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SofiaInfis.Web.Components.Shared;
@@ -11,7 +13,11 @@ public sealed class SofiaWebRenderingTests
     [Fact]
     public async Task Landing_page_and_local_art_are_served_by_the_new_host()
     {
-        await using var factory = new WebApplicationFactory<SofiaInfis.Web.Program>();
+        await using var factory = new WebApplicationFactory<SofiaInfis.Web.Program>().WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureLogging(logging => logging.ClearProviders());
+            builder.ConfigureServices(services => services.AddDataProtection().UseEphemeralDataProtectionProvider());
+        });
         using var client = factory.CreateClient();
         var html = await client.GetStringAsync("/");
         Assert.Contains("lang=\"pt-BR\"", html); Assert.Contains("Sua pr", html);
