@@ -6,7 +6,7 @@ public static class A2AOptionsValidator
     {
         if (!options.Enabled) return true;
         if (new[] { options.DiscoveryTimeoutSeconds, options.CallTimeoutSeconds, options.ExecutionTimeoutSeconds,
-            options.FinalizationTimeoutSeconds, options.PollingMilliseconds, options.MaxEnvelopeBytes,
+            options.FinalizationTimeoutSeconds, options.FinalReviewTimeoutSeconds, options.PollingMilliseconds, options.MaxEnvelopeBytes,
             options.MaxActiveExecutions, options.MaxPendingExecutions, options.MaxConcurrentCalls, options.RetentionDays }.Any(x => x <= 0)) return false;
         if (options.Agents.Select(x => x.IdAgente).Distinct(StringComparer.Ordinal).Count() != options.Agents.Length) return false;
         return options.InboundClients.All(x => !string.IsNullOrWhiteSpace(x.ClientId) && x.TokenHash.Length == 64 && x.TokenHash.All(Uri.IsHexDigit))

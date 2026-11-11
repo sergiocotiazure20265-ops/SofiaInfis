@@ -1,5 +1,5 @@
 <details class="trace-panel specialist-trace">
-    <summary><UiIcon Name="trace" Size="16" /><span>Agentes e rastreamento</span><small>@Run.Agents.Count especialista(s) chamado(s)</small><UiIcon Name="chevron" Size="15" /></summary>
+    <summary><UiIcon Name="trace" Size="16" /><span>Agentes e rastreamento</span><small>@Run.Agents.Count(a => !a.IsFinalReview) especialista(s)@if (Run.FinalReview is not null) { <span> + parecer final</span> }</small><UiIcon Name="chevron" Size="15" /></summary>
     <div class="trace-content">
         <div class="trace-overview"><div><span class="trace-kicker">ORQUESTRAÇÃO SOFIA</span><strong>@Run.StateLabel</strong></div><span class="trace-selection-note">Seleção por especialidade</span></div>
         @if (Run.Agents.Count > 0)
@@ -7,10 +7,10 @@
             <div class="trace-agent-grid">
                 @foreach (var agent in Run.Agents)
                 {
-                    <article class="specialist-call" @key="agent.Id">
-                        <header><AgentIdentity Name="@agent.Name" Developer="@agent.Developer" /><span class="specialist-status @agent.StatusTone"><i></i>@agent.StatusLabel</span></header>
+                    <article class="specialist-call @AgentPalette.ClassFor(agent.Id) @(agent.IsFinalReview ? "final-review-card" : "")" @key="agent.Id">
+                        <header><AgentIdentity Id="@agent.Id" Name="@agent.Name" Developer="@agent.Developer" />@if (agent.IsFinalReview) { <span class="final-review-label">Última etapa · parecer final</span> }<span class="specialist-status @agent.StatusTone"><i></i>@agent.StatusLabel</span></header>
                         <p class="selection-reason">@(agent.SelectionReason ?? "Especialista registrado nesta execução.")</p>
-                        <div class="call-metrics"><span><UiIcon Name="file" Size="14" />@(agent.DocumentsSent is null ? "Documentos não informados" : agent.DocumentsSent == 0 ? "Contexto da pergunta" : $"{agent.DocumentsSent} documento(s)")</span><span>@(agent.DurationMs is null ? "Em acompanhamento" : $"{agent.DurationMs:N0} ms")</span></div>
+                        <div class="call-metrics"><span><UiIcon Name="file" Size="14" />@(agent.IsFinalReview ? $"Consolidação de {Run.Agents.Count(a => !a.IsFinalReview)} especialistas" : agent.DocumentsSent is null ? "Documentos não informados" : agent.DocumentsSent == 0 ? "Contexto da pergunta" : $"{agent.DocumentsSent} documento(s)")</span><span>@(agent.DurationMs is null ? "Em acompanhamento" : $"{agent.DurationMs:N0} ms")</span></div>
                         @if (agent.Error is not null) { <p class="call-error">O especialista não concluiu a análise. As demais contribuições foram preservadas.</p> }
                         <details class="call-technical"><summary>Detalhes da chamada</summary>
                             @if (agent.Result is not null) { <code>@agent.Result.idSolicitacao</code> }

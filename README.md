@@ -336,3 +336,21 @@ O arquivo `.http` residual não substitui a suíte. A validação integrada atua
 está em [resultados 003](specs/003-rag-integrado/validation-results.md).
 As evidências anteriores permanecem em [A2A](specs/001-integracao-a2a/validation-results.md)
 e [frontend](SofiaInfis.Web/VALIDACAO.md).
+
+## Parecer final após múltiplos especialistas
+
+Quando dois ou mais especialistas são acionados, a SOFIA aguarda o encerramento
+de todos e chama o agente de Roberto uma única vez, na última etapa. Ele recebe
+a pergunta original, os resultados e as falhas/limitações em um pacote de consolidação.
+Com apenas um especialista, permanece a resposta usual da SOFIA. Cada agente tem
+cor própria no catálogo, nos resultados e no rastreamento; o parecer final tem destaque.
+
+O resultado válido do revisor é a resposta principal, com autoria identificada.
+Se a chamada falhar, a SOFIA mantém uma resposta de contingência e informa que
+o parecer final não foi obtido. A configuração A2A:FinalReviewAgentId identifica
+o revisor e A2A:FinalReviewTimeoutSeconds limita a etapa (padrão 45 segundos).
+
+**Dependência externa:** a versão atual do agente do Roberto ainda exige lote
+fiscal normalizado. O novo pacote precisa de suporte no servidor dele; a SOFIA
+não fabrica lote nem aprovação fiscal. Consulte a
+[compatibilidade e contrato](specs/010-parecer-final-roberto/compatibilidade-roberto.md).

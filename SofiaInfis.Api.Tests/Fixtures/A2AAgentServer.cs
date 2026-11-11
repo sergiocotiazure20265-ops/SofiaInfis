@@ -21,6 +21,8 @@ internal sealed class A2AAgentServer : IAsyncDisposable
     public string Mode { get; set; } = "success";
     public TimeSpan Delay { get; set; }
     public Func<CancellationToken, Task>? BeforeCard { get; set; }
+    public Func<JsonObject, CancellationToken, Task>? BeforeAnalysis { get; set; }
+    public string? AnalysisText { get; set; }
     public string Token { get; } = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
     public ConcurrentQueue<JsonObject> Received { get; } = new();
     private A2AAgentServer(string id)
@@ -71,6 +73,7 @@ internal sealed class A2AAgentServer : IAsyncDisposable
         if (Mode == "unavailable") return Results.StatusCode(503);
         var payload = JsonNode.Parse(rpc["params"]!["message"]!["parts"]![0]!["text"]!.GetValue<string>())!.AsObject();
         Received.Enqueue((JsonObject)payload.DeepClone());
+        if (BeforeAnalysis is not null) await BeforeAnalysis(payload, context.RequestAborted);
         if (Delay > TimeSpan.Zero) await Task.Delay(Delay, context.RequestAborted);
         if (Mode == "working")
         {
@@ -87,7 +90,7 @@ internal sealed class A2AAgentServer : IAsyncDisposable
             ["idSolicitacao"] = payload["idSolicitacao"]!.DeepClone(),
             ["agente"] = new JsonObject { ["idAgente"] = Id, ["nome"] = Id },
             ["status"] = Mode == "business-error" ? "erro" : Mode == "partial" ? "parcial" : "concluido",
-            ["analise"] = "Synthetic analysis; no factual assertion about a real document.",
+            ["analise"] = AnalysisText ?? "Synthetic analysis; no factual assertion about a real document.",
             ["achados"] = new JsonArray()
         };
         if (Mode == "wrong-id") result["idExecucao"] = Guid.NewGuid().ToString();

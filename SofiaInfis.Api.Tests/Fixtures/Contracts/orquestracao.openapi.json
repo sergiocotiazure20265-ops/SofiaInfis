@@ -773,6 +773,13 @@
             ],
             "minimum": 0,
             "description": "Quantidade de anexos enviados; zero indica somente contexto textual da pergunta."
+          },
+          "etapa": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "parecer_final identifica a conclusão sequencial do agente revisor; ausente/nulo indica especialista."
           }
         },
         "additionalProperties": true

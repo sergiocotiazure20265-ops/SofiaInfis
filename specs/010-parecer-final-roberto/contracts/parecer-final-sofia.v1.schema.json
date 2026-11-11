@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Documento de consolidação SOFIA para parecer final",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "versao",
+    "idExecucao",
+    "perguntaOriginal",
+    "especialistas",
+    "limitacoes"
+  ],
+  "properties": {
+    "versao": {
+      "const": "parecer-final-sofia.v1"
+    },
+    "idExecucao": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "perguntaOriginal": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 2000
+    },
+    "limitacoes": {
+      "type": "string",
+      "minLength": 1
+    },
+    "especialistas": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "idAgente",
+          "idSolicitacao",
+          "estado",
+          "resultado",
+          "falha"
+        ],
+        "properties": {
+          "idAgente": {
+            "type": "string",
+            "minLength": 1
+          },
+          "idSolicitacao": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "estado": {
+            "type": "string",
+            "minLength": 1
+          },
+          "resultado": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "falha": {
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

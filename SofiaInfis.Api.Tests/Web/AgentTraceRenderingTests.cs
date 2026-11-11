@@ -24,8 +24,9 @@ public sealed class AgentTraceRenderingTests
         using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
         await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
         var run = new ChatRun("Verifique meus documentos", ["nota.xml", "livro.txt"]) { State = "parcial", ExecutionId = Guid.NewGuid().ToString() };
-        run.Agents.Add(new("nfse", "Agente Validador NFS-e", "concluida", 1250, Developer: "Marcos", SelectionReason: "Especialidade identificada no conteúdo dos documentos.", DocumentsSent: 1));
-        run.Agents.Add(new("ecd", "Agente Validação ECD", "falhou", 2800, Error: "AGENT_CONNECTION_FAILED", Developer: "Carol", SelectionReason: "Especialidade compatível com a pergunta e os documentos.", DocumentsSent: 1));
+        run.Agents.Add(new("nfse-validador", "Agente Validador NFS-e", "concluida", 1250, Developer: "Marcos", SelectionReason: "Especialidade identificada no conteúdo dos documentos.", DocumentsSent: 1));
+        run.Agents.Add(new("agente-validacao-ecd", "Agente Validação ECD", "falhou", 2800, Error: "AGENT_CONNECTION_FAILED", Developer: "Carol", SelectionReason: "Especialidade compatível com a pergunta e os documentos.", DocumentsSent: 1));
+        run.Agents.Add(new("agente-parecer-tributario", "Agente Parecer Tributário", "concluida", 400, Developer: "Roberto Rabelo", Stage: "parecer_final"));
         run.Trace.Add(new(DateTimeOffset.UtcNow, "Especialistas selecionados", "AGENTE VALIDADOR NFS-E · AGENTE VALIDAÇÃO ECD"));
         var html = await renderer.Dispatcher.InvokeAsync(async () =>
             (await renderer.RenderComponentAsync<RunTrace>(ParameterView.FromDictionary(new Dictionary<string, object?> { ["Run"] = run }))).ToHtmlString());
@@ -34,6 +35,9 @@ public sealed class AgentTraceRenderingTests
         Assert.Contains("Desenvolvido por Marcos", decoded); Assert.Contains("Desenvolvido por Carol", decoded);
         Assert.Contains("specialist-avatar", html); Assert.Contains("Concluído", decoded); Assert.Contains("Falha", decoded);
         Assert.Contains("1 documento(s)", decoded); Assert.Contains("Especialidade identificada", decoded);
+        Assert.Contains("Última etapa · parecer final", decoded);
+        Assert.Contains("Consolidação de 2 especialistas", decoded);
+        Assert.Contains("agent-color-0", html); Assert.Contains("agent-color-1", html); Assert.Contains("agent-color-7", html);
         Assert.DoesNotContain("em_andamento", html);
         Assert.DoesNotContain("specialist-trace\" open", html);
         var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../.."));

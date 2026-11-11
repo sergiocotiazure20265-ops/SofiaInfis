@@ -103,12 +103,12 @@ public sealed class LiveSofiaChat(HttpClient http, IOptions<SofiaOptions> option
                     }
                     var view = new AgentView(call.idAgente, result?.agente.nome ?? names.GetValueOrDefault(call.idAgente, call.idAgente),
                         call.estado, call.duracaoMs, result, call.falhaTecnica?.codigo, call.consumo,
-                        developers.GetValueOrDefault(call.idAgente), call.motivoSelecao, call.documentosEnviados);
+                        developers.GetValueOrDefault(call.idAgente), call.motivoSelecao, call.documentosEnviados, call.etapa);
                     if (previous is not null) run.Agents[run.Agents.IndexOf(previous)] = view;
                     else
                     {
                         run.Agents.Add(view);
-                        run.Trace.Add(new(DateTimeOffset.UtcNow, "Especialista selecionado", view.Name.ToUpperInvariant()));
+                        run.Trace.Add(new(DateTimeOffset.UtcNow, view.IsFinalReview ? "Parecer final agendado" : "Especialista selecionado", view.Name.ToUpperInvariant()));
                     }
                 }
                 run.State = execution.estado;
@@ -119,6 +119,7 @@ public sealed class LiveSofiaChat(HttpClient http, IOptions<SofiaOptions> option
                 if (!run.IsRunning) break;
                 await Task.Delay(750, deadline.Token);
             } while (true);
+            FinalReviewAnswerComposer.TryApply(run);
             if (!run.HasUsableResults && run.Error is null && run.State is not ("cancelada" or "interrompida"))
             {
                 var noAgents = run.Agents.Count == 0;
@@ -164,6 +165,7 @@ public sealed class LiveSofiaChat(HttpClient http, IOptions<SofiaOptions> option
         finally
         {
             AvailableAnswerComposer.EnsureAnswer(run);
+            FinalReviewAnswerComposer.EnsureFailureNotice(run);
             run.EndedAt = DateTimeOffset.UtcNow; await changed();
         }
     }
@@ -180,7 +182,7 @@ public sealed class LiveSofiaChat(HttpClient http, IOptions<SofiaOptions> option
         if (!run.HasUsableResults || run.IsRunning || (run.Answer is not null && !run.AnswerIsFallback)) return;
         var source = JsonSerializer.Serialize(new { perguntaOriginal = run.Question, idExecucao = run.ExecutionId,
             estado = run.State, limitacaoExecucao = run.Error,
-            analises = run.Agents.Select(a => new { agente = a.Name, estado = a.State, resultado = a.Result, erroTecnico = a.Error }) },
+            analises = run.Agents.Select(a => new { agente = a.Name, etapa = a.Stage, estado = a.State, resultado = a.Result, erroTecnico = a.Error }) },
             new JsonSerializerOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
         if (source.Length > 20000)
         {
@@ -205,7 +207,7 @@ public sealed class LiveSofiaChat(HttpClient http, IOptions<SofiaOptions> option
             run.Trace.Add(new(DateTimeOffset.UtcNow, "Resposta com os resultados disponíveis", "A síntese automática não foi concluída. As análises recebidas foram preservadas e reunidas na resposta."));
             AvailableAnswerComposer.EnsureAnswer(run);
         }
-        finally { run.IsSynthesizing = false; await changed(); }
+        finally { run.IsSynthesizing = false; FinalReviewAnswerComposer.EnsureFailureNotice(run); await changed(); }
     }
     private async Task<RespostaSofia> AskLegacyAsync(string question, string? source, CancellationToken ct)
     {

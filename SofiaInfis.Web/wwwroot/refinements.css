@@ -30,3 +30,19 @@
 @media(max-width:600px){.specialist-trace>summary{padding:14px 12px;flex-wrap:wrap}.specialist-trace .trace-content{padding:0 12px 14px}.trace-overview{align-items:flex-start;flex-direction:column}.specialist-call{padding:13px}.specialist-status{margin-left:46px}.agent-result>summary{flex-wrap:wrap}.agent-result>summary .result-status{margin-left:46px}.specialist-trace>summary>small{margin-left:25px}}
 
 .catalog-agent>span.specialist-identity:nth-child(2){white-space:normal;overflow:visible;text-overflow:clip}
+
+/* Stable identity colors; execution state remains separately labeled. */
+.agent-color-0{--agent-ink:#8c4a0b;--agent-tint:#fff1de;--agent-border:#ebcba2}
+.agent-color-1{--agent-ink:#155e59;--agent-tint:#e8f6f2;--agent-border:#acd9cd}
+.agent-color-2{--agent-ink:#31548e;--agent-tint:#eaf0ff;--agent-border:#b7c9ef}
+.agent-color-3{--agent-ink:#37612b;--agent-tint:#eff7e8;--agent-border:#c2d7b0}
+.agent-color-4{--agent-ink:#94364f;--agent-tint:#fcebf0;--agent-border:#e7b3c4}
+.agent-color-5{--agent-ink:#77571d;--agent-tint:#faf3dc;--agent-border:#dfd093}
+.agent-color-6{--agent-ink:#1a627d;--agent-tint:#e7f5fb;--agent-border:#add6e6}
+.agent-color-7{--agent-ink:#714091;--agent-tint:#f3eafa;--agent-border:#d5b8e7}
+.specialist-avatar[class*="agent-color-"]{background:var(--agent-tint);color:var(--agent-ink);border-color:var(--agent-border)}
+.specialist-call[class*="agent-color-"],.agent-result[class*="agent-color-"]{border-left:4px solid var(--agent-border)}
+.specialist-call[class*="agent-color-"]>.selection-reason{color:var(--agent-ink)}
+.catalog-agent[class*="agent-color-"] .specialist-identity>strong,.agent-result[class*="agent-color-"] .specialist-identity>strong,.specialist-call[class*="agent-color-"] .specialist-identity>strong{color:var(--agent-ink)}
+.final-review-card{grid-column:1/-1;background:linear-gradient(120deg,var(--agent-tint),#fff 65%)}
+.final-review-label{font-size:10px;line-height:1.5;padding:4px 8px;border-radius:10px;background:var(--agent-tint,#f3eafa);color:var(--agent-ink,#714091);border:1px solid var(--agent-border,#d5b8e7);font-weight:600}

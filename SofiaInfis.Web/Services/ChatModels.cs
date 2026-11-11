@@ -22,8 +22,9 @@ public sealed record TraceEntry(DateTimeOffset At, string Title, string? Detail 
 public sealed record AgentView(string Id, string Name, string State, long? DurationMs,
     ResultadoAnaliseSofia? Result = null, string? Error = null,
     SofiaInfis.Api.Services.A2A.Persistence.ConsumoInformado? Consumption = null,
-    string? Developer = null, string? SelectionReason = null, int? DocumentsSent = null)
+    string? Developer = null, string? SelectionReason = null, int? DocumentsSent = null, string? Stage = null)
 {
+    public bool IsFinalReview => Stage == SofiaInfis.Api.Services.A2A.Domain.FinalReviewRequestBuilder.Stage;
     public string StatusLabel => Result?.status == "parcial" ? "Parcial" : Result?.status == "erro" ? "Erro na análise" : State switch
     {
         "aguardando" => "Na fila", "em_andamento" => "Analisando", "concluida" => "Concluído",
@@ -44,15 +45,19 @@ public sealed class ChatRun(string question, IReadOnlyList<string> files)
     public DateTimeOffset? EndedAt { get; set; }
     public string? Answer { get; set; }
     public bool AnswerIsFallback { get; set; }
+    public bool AnswerFromFinalReview { get; set; }
+    public string? AnswerAuthor { get; set; }
     public string? Error { get; set; }
     public int? Tokens { get; set; }
     public string? SynthesisExecutionId { get; set; }
     public bool IsSynthesizing { get; set; }
     public List<TraceEntry> Trace { get; } = [];
     public List<AgentView> Agents { get; } = [];
+    public AgentView? FinalReview => Agents.FirstOrDefault(x => x.IsFinalReview);
     public bool HasUsableResults => Agents.Any(a => a.Result?.status is "concluido" or "parcial");
     public bool IsRunning => IsSynthesizing || State is "preparando" or "em_andamento";
-    public string StateLabel => IsSynthesizing ? "Preparando resposta da SOFIA" : State switch
+    public string StateLabel => IsSynthesizing ? "Preparando resposta da SOFIA" :
+        FinalReview?.State == "em_andamento" ? "Preparando parecer final com Roberto" : State switch
     {
         "preparando" => "Preparando sua análise", "em_andamento" => "SOFIA analisando",
         "concluida" => "Análise concluída", "parcial" => "Análise parcialmente concluída",

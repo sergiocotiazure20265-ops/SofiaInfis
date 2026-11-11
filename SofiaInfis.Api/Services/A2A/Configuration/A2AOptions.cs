@@ -6,6 +6,8 @@ public sealed class A2AOptions
     public bool AllowInsecureDevelopmentHttp { get; set; }
     public int DiscoveryTimeoutSeconds { get; set; } = 5;
     public int CallTimeoutSeconds { get; set; } = 60;
+    public string FinalReviewAgentId { get; set; } = "agente-parecer-tributario";
+    public int FinalReviewTimeoutSeconds { get; set; } = 45;
     public int ExecutionTimeoutSeconds { get; set; } = 120;
     public int FinalizationTimeoutSeconds { get; set; } = 5;
     public int PollingMilliseconds { get; set; } = 500;

@@ -14,6 +14,7 @@ internal sealed class A2ATestConfiguration : IDisposable
     public A2ATestConfiguration(MongoFixture mongo, params A2AAgentServer[] agents)
     {
         Settings["A2A:Enabled"] = "true";
+        Settings["A2A:FinalReviewAgentId"] = "";
         Settings["A2A:AllowInsecureDevelopmentHttp"] = "true";
         Settings["A2A:MongoConnectionString"] = mongo.ConnectionString;
         Settings["A2A:MongoDatabase"] = mongo.DatabaseName;
