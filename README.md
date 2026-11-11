@@ -339,18 +339,18 @@ e [frontend](SofiaInfis.Web/VALIDACAO.md).
 
 ## Parecer final após múltiplos especialistas
 
-Quando dois ou mais especialistas são acionados, a SOFIA aguarda o encerramento
-de todos e chama o agente de Roberto uma única vez, na última etapa. Ele recebe
-a pergunta original, os resultados e as falhas/limitações em um pacote de consolidação.
-Com apenas um especialista, permanece a resposta usual da SOFIA. Cada agente tem
-cor própria no catálogo, nos resultados e no rastreamento; o parecer final tem destaque.
+Após dois ou mais especialistas, a SOFIA tenta montar um lote fiscal no contrato
+atual de Roberto. Quando o lote atende ao schema e às pré-condições, Roberto é
+chamado uma única vez, por último. Com um especialista, permanece o fluxo usual.
+Cada agente tem cor própria no catálogo, resultados e rastreamento.
 
-O resultado válido do revisor é a resposta principal, com autoria identificada.
-Se a chamada falhar, a SOFIA mantém uma resposta de contingência e informa que
-o parecer final não foi obtido. A configuração A2A:FinalReviewAgentId identifica
-o revisor e A2A:FinalReviewTimeoutSeconds limita a etapa (padrão 45 segundos).
+O adaptador preserva relatórios explícitos de origem; não transforma análises
+parciais em aprovação. Aceita lote/obrigações normalizados nos sete tipos do
+contrato, e extração automática de NF-e 4.00 e EFD ICMS/IPI 020 com relatório
+associado. Layouts/registros sem mapeamento revisado precisam vir normalizados.
 
-**Dependência externa:** a versão atual do agente do Roberto ainda exige lote
-fiscal normalizado. O novo pacote precisa de suporte no servidor dele; a SOFIA
-não fabrica lote nem aprovação fiscal. Consulte a
-[compatibilidade e contrato](specs/010-parecer-final-roberto/compatibilidade-roberto.md).
+Se faltarem dados, Roberto aparece como não executado e a SOFIA dá a conclusão,
+explicando as limitações. O agente remoto não foi alterado. A síntese automática
+pode usar o endpoint RAG/OpenAI existente; há resposta local se ele falhar.
+
+Veja [formato, exemplos e limites](specs/011-adaptador-lote-roberto/contrato-e-uso.md).

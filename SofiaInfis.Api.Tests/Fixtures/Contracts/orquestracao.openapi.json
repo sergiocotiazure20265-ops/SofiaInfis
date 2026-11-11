@@ -707,6 +707,7 @@
               "concluida",
               "falhou",
               "timeout",
+              "nao_executada",
               "cancelada",
               "interrompida"
             ]

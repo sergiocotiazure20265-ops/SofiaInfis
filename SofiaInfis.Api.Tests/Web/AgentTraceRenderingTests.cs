@@ -36,7 +36,7 @@ public sealed class AgentTraceRenderingTests
         Assert.Contains("specialist-avatar", html); Assert.Contains("Concluído", decoded); Assert.Contains("Falha", decoded);
         Assert.Contains("1 documento(s)", decoded); Assert.Contains("Especialidade identificada", decoded);
         Assert.Contains("Última etapa · parecer final", decoded);
-        Assert.Contains("Consolidação de 2 especialistas", decoded);
+        Assert.Contains("Lote fiscal e contexto dos especialistas", decoded);
         Assert.Contains("agent-color-0", html); Assert.Contains("agent-color-1", html); Assert.Contains("agent-color-7", html);
         Assert.DoesNotContain("em_andamento", html);
         Assert.DoesNotContain("specialist-trace\" open", html);

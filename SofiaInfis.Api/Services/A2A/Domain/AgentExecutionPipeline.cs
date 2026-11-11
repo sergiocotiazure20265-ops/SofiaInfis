@@ -55,7 +55,7 @@ public sealed class AgentExecutionPipeline(IExecutionRepository repository, IAge
                     Id = Guid.NewGuid().ToString(), IdExecucao = execution.Id, IdAgente = options.FinalReviewAgentId,
                     Etapa = FinalReviewRequestBuilder.Stage, Ordem = pending.Count, OwnerRunId = execution.OwnerRunId,
                     CriadoEm = time.GetUtcNow().UtcDateTime, Deadline = execution.Deadline, ExpiresAt = execution.ExpiresAt,
-                    MotivoSelecao = "Parecer final obrigatório após dois ou mais especialistas. Aguarda o encerramento de todas as análises."
+                    MotivoSelecao = "Aguarda todos os especialistas; Roberto será chamado se houver dados suficientes para o lote fiscal. Caso contrário, a SOFIA dará a conclusão."
                 };
                 await repository.InsertCallAsync(finalCall, ct);
             }
@@ -72,13 +72,21 @@ public sealed class AgentExecutionPipeline(IExecutionRepository repository, IAge
             {
                 try
                 {
+                    var adapted = RobertoLoteAdapter.Adapt(work.Request.documentos, execution.Id);
+                    if (!adapted.Ready)
+                    {
+                        SkipReview(finalCall, adapted.Limitations);
+                        if (!await coordinator.SaveCallAsync(repository, work, finalCall, ct)) throw new A2AException("armazenamento", "FINAL_REVIEW_WRITE_CONFLICT", 503);
+                        return;
+                    }
                     if (reviewer is null) throw new A2AException("descoberta", "FINAL_REVIEW_AGENT_UNAVAILABLE");
-                    var documents = FinalReviewRequestBuilder.Build(work.Request, execution.Id,
-                        await repository.GetCallsAsync(execution.Id, ct));
+                    var documents = adapted.Documents!;
+                    documents.AddRange(FinalReviewRequestBuilder.Build(work.Request, execution.Id,
+                        await repository.GetCallsAsync(execution.Id, ct)).Select(x => x with { idDocumento = "sofia-review-context" }));
                     var route = new AgentRoute(reviewer, documents,
-                        "Parecer final com a pergunta original, resultados, falhas e limitações de todos os especialistas acionados.");
+                        "Lote fiscal validado pelo adaptador da SOFIA. " + string.Join(" ", adapted.Limitations));
                     finalCall.MotivoSelecao = route.Reason;
-                    finalCall.DocumentosEnviados = 1;
+                    finalCall.DocumentosEnviados = documents.Count;
                     using var finalDeadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
                     finalDeadline.CancelAfter(TimeSpan.FromSeconds(options.FinalReviewTimeoutSeconds));
                     await ExecuteCallAsync(work, route, finalCall, slots, finalDeadline.Token);
@@ -104,6 +112,14 @@ public sealed class AgentExecutionPipeline(IExecutionRepository repository, IAge
             if (!saved) telemetry.Failure("execution", "storage");
         }
     }
+    private void SkipReview(AgentCallDocument call, string[] limitations)
+    {
+        call.Estado = "nao_executada";
+        call.DocumentosEnviados = 0; call.DuracaoMs = 0;
+        call.MotivoSelecao = "Conclusão pela SOFIA. " + string.Join(" ", limitations);
+        call.FalhaTecnica = new("validacao", "FINAL_REVIEW_INSUFFICIENT_DATA", "Dados insuficientes para um lote fiscal válido; nenhuma chamada enviada ao agente do Roberto.");
+        call.EncerradoEm = time.GetUtcNow().UtcDateTime;
+    }
     private async Task ExecuteCallAsync(OrchestrationWork work, AgentRoute route, AgentCallDocument call,
         SemaphoreSlim slots, CancellationToken ct)
     {
@@ -114,6 +130,13 @@ public sealed class AgentExecutionPipeline(IExecutionRepository repository, IAge
         {
             await slots.WaitAsync(ct); acquired = true;
             ct.ThrowIfCancellationRequested();
+            if (call.IdAgente == options.FinalReviewAgentId && call.Etapa != FinalReviewRequestBuilder.Stage)
+            {
+                var adapted = RobertoLoteAdapter.Adapt(work.Request!.documentos, work.Execution.Id);
+                if (!adapted.Ready) { SkipReview(call, adapted.Limitations); return; }
+                route = route with { Documents = adapted.Documents!, Reason = "Lote fiscal adaptado pela SOFIA. " + string.Join(" ", adapted.Limitations) };
+                call.MotivoSelecao = route.Reason; call.DocumentosEnviados = route.Documents.Count;
+            }
             call.EnviadoEm = time.GetUtcNow().UtcDateTime;
             call.Deadline = call.EnviadoEm.Value.AddSeconds(options.CallTimeoutSeconds) < work.Execution.Deadline
                 ? call.EnviadoEm.Value.AddSeconds(options.CallTimeoutSeconds) : work.Execution.Deadline;
@@ -121,7 +144,7 @@ public sealed class AgentExecutionPipeline(IExecutionRepository repository, IAge
             if (!await coordinator.SaveCallAsync(repository, work, call, ct)) throw new A2AException("armazenamento", "CALL_WRITE_CONFLICT", 503);
             var input = work.Request! with { documentos = route.Documents };
             if (call.Etapa == FinalReviewRequestBuilder.Stage)
-                input = input with { pergunta = "Produza o parecer final e a conclusão sobre a pergunta original registrada no documento parecer-final-sofia.v1. Considere todas as análises, divergências, falhas, limitações e próximos passos. Não declare conformidade nem invente validações ausentes." };
+                input = input with { pergunta = "Analise o lote.v1 anexo nos cruzamentos disponíveis no seu motor e apresente o parecer com as limitações de cobertura. Não presuma conformidade dos documentos ou de análises fora desse escopo." };
             new OrchestrationInputValidator(options).Validate(input);
             var request = OrchestrationInputValidator.DomainRequest(input, Guid.Parse(work.Execution.Id), Guid.Parse(call.Id));
             var remote = await client.AnalyzeAsync(route.Agent, request, async (taskId, contextId, token) =>

@@ -158,7 +158,7 @@ public partial class ChatPanel
     private async Task CopyId(ChatRun run) { try { await JS.InvokeVoidAsync("navigator.clipboard.writeText", run.ExecutionId); _notice = "Identificador copiado."; } catch { _notice = "Selecione o identificador no rastreamento para copiá-lo."; } }
     private async Task NewChat() { if (_busy) return; await CancelVoice(); _runs.Clear(); _files.Clear(); _question = ""; _notice = null; _sidebarOpen = false; await _questionElement.FocusAsync(); }
     private async Task Leave() { if (!_busy) { await CancelVoice(); await OnLeave.InvokeAsync(); } }
-    private static string AgentStatus(AgentView agent) => agent.Error is not null ? "Indisponível" : agent.Result?.status switch { "concluido" => "Concluído", "parcial" => "Parcial", "erro" => "Com limitação", _ => agent.State switch { "timeout" => "Prazo encerrado", "cancelada" => "Cancelado", "interrompida" => "Interrompido", _ => "Analisando…" } };
+    private static string AgentStatus(AgentView agent) => agent.ReviewSkipped ? "Não executado · SOFIA conclui" : agent.Error is not null ? "Indisponível" : agent.Result?.status switch { "concluido" => "Concluído", "parcial" => "Parcial", "erro" => "Com limitação", _ => agent.State switch { "timeout" => "Prazo encerrado", "cancelada" => "Cancelado", "interrompida" => "Interrompido", _ => "Analisando…" } };
     public async ValueTask DisposeAsync()
     {
         _disposed = true; _lifetime.Cancel(); _operation.Cancel(); _files.Clear();

@@ -18,6 +18,7 @@ public sealed class FinalReviewGatewayTests
     [InlineData("parcial")]
     [InlineData("erro")]
     [InlineData(null)]
+    [InlineData("skipped")]
     public async Task Final_review_is_presented_with_actual_authorship_or_explicit_sofia_contingency(string? finalStatus)
     {
         var execution = Guid.NewGuid(); var ids = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
@@ -38,9 +39,9 @@ public sealed class FinalReviewGatewayTests
             }
             await Task.CompletedTask;
             return Json(new ExecucaoConsulta(execution.ToString(), finalStatus == "concluido" ? "concluida" : "parcial", DateTime.UtcNow, DateTime.UtcNow, DateTime.UtcNow.AddDays(1), ["analisar_documentos"], [],
-                new(names.Select((x, i) => new ChamadaResumo(ids[i].ToString(), x, i == 2 && finalStatus is null ? "falhou" : "concluida", i == 2 ? finalStatus : "concluido",
-                    i != 2 || finalStatus is not null, null, i == 2 && finalStatus is null ? new("conexao", "AGENT_HTTP_FAILURE", "Indisponível") : null, 10, null,
-                    etapa: i == 2 ? "parecer_final" : null)).ToArray(), null), true));
+                new(names.Select((x, i) => new ChamadaResumo(ids[i].ToString(), x, i == 2 && finalStatus == "skipped" ? "nao_executada" : i == 2 && finalStatus is null ? "falhou" : "concluida", i == 2 ? finalStatus : "concluido",
+                    i != 2 || finalStatus is not (null or "skipped"), null, i == 2 && finalStatus == "skipped" ? new("validacao", "FINAL_REVIEW_INSUFFICIENT_DATA", "Dados insuficientes") : i == 2 && finalStatus is null ? new("conexao", "AGENT_HTTP_FAILURE", "Indisponível") : null, 10, null,
+                    motivoSelecao: i == 2 && finalStatus == "skipped" ? "Faltam relatório de origem, recibo e registros fiscais." : null, etapa: i == 2 ? "parecer_final" : null)).ToArray(), null), true));
         })), Options.Create(new SofiaOptions { UseSpecialistAgents = true, ServiceToken = "synthetic", ApiBaseUrl = "https://example.invalid/" }), new(new ExtracaoDocumentoService()));
         var run = new ChatRun("Analise os documentos", []);
         await gateway.SubmitAsync(new("Teste", run.Question, []), run, () => Task.CompletedTask, default);
@@ -53,11 +54,33 @@ public sealed class FinalReviewGatewayTests
             Assert.Equal(0, legacy);
             if (finalStatus == "parcial") Assert.Contains("Parecer parcial", run.Answer);
         }
+        else if (finalStatus == "skipped")
+        {
+            Assert.False(run.AnswerFromFinalReview); Assert.Contains("Conclusão da SOFIA", run.Answer);
+            Assert.Contains("ele não foi chamado", run.Answer); Assert.Contains("Faltam relatório", run.Answer);
+            Assert.Contains("Resposta de contingência da SOFIA", run.Answer); Assert.Equal(1, legacy);
+            Assert.True(run.FinalReview!.ReviewSkipped);
+        }
         else
         {
             Assert.False(run.AnswerFromFinalReview); Assert.Contains("Parecer final indisponível", run.Answer);
             Assert.Contains("contingência da SOFIA", run.Answer); Assert.Equal(1, legacy);
         }
+    }
+
+    [Fact]
+    public void Missing_lote_explanation_survives_synthesis_failure_and_is_not_duplicated()
+    {
+        var run = new ChatRun("Analise os documentos", []) { State = "parcial" };
+        run.Agents.Add(new("agente-parecer-tributario", "Agente Parecer", "nao_executada", 0,
+            Error: "FINAL_REVIEW_INSUFFICIENT_DATA", SelectionReason: "Faltam período e relatório de validação.", Stage: "parecer_final"));
+        AvailableAnswerComposer.EnsureAnswer(run);
+        FinalReviewAnswerComposer.EnsureFailureNotice(run);
+        var answer = run.Answer;
+        FinalReviewAnswerComposer.EnsureFailureNotice(run);
+        Assert.Equal(answer, run.Answer); Assert.False(run.AnswerFromFinalReview);
+        Assert.Contains("Conclusão da SOFIA", answer); Assert.Contains("Faltam período", answer);
+        Assert.Contains("ele não foi chamado", answer);
     }
 
     [Fact]

@@ -45,7 +45,7 @@
                             <div class="user-message"><span class="message-author">Você</span><p>@run.Question</p>@if (run.Files.Count > 0) { <div class="message-files">@foreach (var file in run.Files) { <span><UiIcon Name="file" Size="14" /> @file</span> }</div> }</div>
                             <div class="assistant-message"><div class="answer-avatar sofia-avatar"><img src="images/sofia-welcome.png" alt="" /></div><div class="answer-content"><div class="answer-heading"><strong>SOFIA</strong><span>@(run.IsRunning ? "Preparando um olhar mais completo" : "Sua parceira em inteligência fiscal")</span></div>
                                 @if (run.IsRunning) { <div class="working-indicator"><span class="typing-dots"><i></i><i></i><i></i></span>@run.StateLabel</div> }
-                                @if (run.Answer is not null) { <section class="final-answer"><span class="answer-eyebrow"><UiIcon Name="sparkles" Size="15" /> @(run.AnswerFromFinalReview ? $"PARECER FINAL · {run.AnswerAuthor?.ToUpperInvariant()}" : run.FinalReview is not null ? "RESPOSTA DE CONTINGÊNCIA DA SOFIA" : run.AnswerIsFallback ? "RESPOSTA COM AS INFORMAÇÕES DISPONÍVEIS" : "RESPOSTA DA SOFIA")</span><MarkdownText Text="@run.Answer" /></section> }
+                                @if (run.Answer is not null) { <section class="final-answer"><span class="answer-eyebrow"><UiIcon Name="sparkles" Size="15" /> @(run.AnswerFromFinalReview ? $"PARECER FINAL · {run.AnswerAuthor?.ToUpperInvariant()}" : run.Agents.Any(a => a.ReviewSkipped) ? "CONCLUSÃO DA SOFIA" : run.FinalReview is not null ? "RESPOSTA DE CONTINGÊNCIA DA SOFIA" : run.AnswerIsFallback ? "RESPOSTA COM AS INFORMAÇÕES DISPONÍVEIS" : "RESPOSTA DA SOFIA")</span><MarkdownText Text="@run.Answer" /></section> }
                                 @if (run.Agents.Count > 0)
                                 {
                                     <div class="agent-results"><div class="results-title"><UiIcon Name="layers" Size="17" /><strong>Olhares dos especialistas</strong><span>@run.Agents.Count(a => a.Result is not null)/@run.Agents.Count</span></div>
@@ -61,7 +61,7 @@
                                                     @if (agent.Result.observacoes is { Count: > 0 }) { <div class="agent-observations">@foreach (var observation in agent.Result.observacoes) { <p>@observation</p> }</div> }
                                                     @if (agent.Result.erro is not null) { <p class="inline-warning">@agent.Result.erro.mensagem</p> }
                                                 }
-                                                else { <p>@(agent.Error is not null ? "Este especialista não concluiu uma análise válida. As demais contribuições foram preservadas." : "Aguardando o especialista concluir sua análise.")</p> }
+                                                else { <p>@(agent.ReviewSkipped ? agent.SelectionReason : agent.Error is not null ? "Este especialista não concluiu uma análise válida. As demais contribuições foram preservadas." : "Aguardando o especialista concluir sua análise.")</p> }
                                             </div>
                                         </details>
                                     }

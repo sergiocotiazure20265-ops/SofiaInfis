@@ -11,11 +11,13 @@ namespace SofiaInfis.Api.Tests.Integration;
 public sealed class FinalReviewPipelineTests
 {
     private const string Reviewer = "agente-parecer-tributario";
-    private static async Task<string> Start(HttpClient client, bool two = true)
+    private static async Task<string> Start(HttpClient client, bool two = true, bool sufficient = true)
     {
         for (var i = 0; i < 60; i++) { if ((await client.GetAsync("/api/v1/agentes")).StatusCode == HttpStatusCode.OK) break; await Task.Delay(50); }
-        var docs = new List<object> { new { idDocumento = "nota", nome = "nota.xml", texto = "<Nfse/>" } };
-        if (two) docs.Add(new { idDocumento = "livro", nome = "livro.txt", texto = "ECD sintética" });
+        var fixture = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures/Contracts/examples/roberto-lote.json")))!;
+        string Data(string type) => fixture["obrigacoes"]!.AsArray().First(x => x!["tipo"]!.GetValue<string>() == type)!.ToJsonString();
+        var docs = new List<object> { new { idDocumento = "nota", nome = "nfse.xml", texto = sufficient ? Data("NFSE") : "<Nfse/>" } };
+        if (two) docs.Add(new { idDocumento = "livro", nome = "ecd.txt", texto = sufficient ? Data("ECD") : "ECD sintética" });
         var response = await client.PostAsJsonAsync("/api/v1/orquestracoes", new { usuario = new { nome = "Teste sintético" },
             pergunta = "Analise os arquivos e faça um parecer", documentos = docs, capacidades = new[] { "analisar_documentos" } });
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
@@ -63,7 +65,11 @@ public sealed class FinalReviewPipelineTests
         var request = Assert.Single(final.Received);
         Assert.Equal(id, request["idExecucao"]!.GetValue<string>());
         Assert.Equal(review.Id, request["idSolicitacao"]!.GetValue<string>());
-        var document = Assert.Single(request["documentos"]!.AsArray())!;
+        Assert.Equal(2, request["documentos"]!.AsArray().Count);
+        var lote = JsonNode.Parse(request["documentos"]![0]!["texto"]!.GetValue<string>())!;
+        Assert.Equal("1.0.0", lote["versaoContrato"]!.GetValue<string>());
+        Assert.Equal(2, lote["obrigacoes"]!.AsArray().Count);
+        var document = request["documentos"]![1]!;
         var input = JsonNode.Parse(document["texto"]!.GetValue<string>())!;
         Assert.Equal("parecer-final-sofia.v1", input["versao"]!.GetValue<string>());
         Assert.Equal("Analise os arquivos e faça um parecer", input["perguntaOriginal"]!.GetValue<string>());
@@ -73,6 +79,24 @@ public sealed class FinalReviewPipelineTests
         Assert.Equal(firstMode == "success" && secondMode == "success" ? "concluida" : "parcial", execution.Estado);
         using var query = await client.GetAsync("/api/v1/orquestracoes/" + id);
         Assert.Contains("parecer_final", await query.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task Missing_lote_data_skips_remote_call_and_preserves_specialist_results()
+    {
+        await using var first = await A2AAgentServer.StartAsync("nfse"); first.Mode = "partial";
+        await using var second = await A2AAgentServer.StartAsync("ecd");
+        await using var final = await A2AAgentServer.StartAsync(Reviewer);
+        using var config = new A2ATestConfiguration(new MongoFixture(), first, second, final); Configure(config);
+        var store = new InMemoryExecutionRepository(); await using var factory = Factory(config, store); using var client = config.Client(factory);
+        var id = await Start(client, sufficient: false); await PartialOrchestrationTests.Wait(store, id);
+        var calls = await store.GetCallsAsync(id, default);
+        Assert.Equal(2, calls.Count(x => x.ResultadoJson is not null));
+        var review = Assert.Single(calls, x => x.Etapa == FinalReviewRequestBuilder.Stage);
+        Assert.Equal("nao_executada", review.Estado); Assert.Null(review.EnviadoEm);
+        Assert.Equal(0, review.DocumentosEnviados); Assert.Equal(0, final.AnalysisCalls);
+        Assert.Equal("FINAL_REVIEW_INSUFFICIENT_DATA", review.FalhaTecnica?.codigo);
+        Assert.Contains("validação de origem", review.MotivoSelecao);
     }
 
     [Fact]

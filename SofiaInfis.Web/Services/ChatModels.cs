@@ -25,7 +25,8 @@ public sealed record AgentView(string Id, string Name, string State, long? Durat
     string? Developer = null, string? SelectionReason = null, int? DocumentsSent = null, string? Stage = null)
 {
     public bool IsFinalReview => Stage == SofiaInfis.Api.Services.A2A.Domain.FinalReviewRequestBuilder.Stage;
-    public string StatusLabel => Result?.status == "parcial" ? "Parcial" : Result?.status == "erro" ? "Erro na análise" : State switch
+    public bool ReviewSkipped => State == "nao_executada" && Error == "FINAL_REVIEW_INSUFFICIENT_DATA";
+    public string StatusLabel => ReviewSkipped ? "Dados insuficientes · SOFIA conclui" : Result?.status == "parcial" ? "Parcial" : Result?.status == "erro" ? "Erro na análise" : State switch
     {
         "aguardando" => "Na fila", "em_andamento" => "Analisando", "concluida" => "Concluído",
         "falhou" => "Falha", "timeout" => "Tempo esgotado", "cancelada" => "Cancelado",
