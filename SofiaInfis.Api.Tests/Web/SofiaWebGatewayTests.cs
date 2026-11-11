@@ -73,8 +73,9 @@ public sealed class SofiaWebGatewayTests
         var execution = Guid.NewGuid(); var call = Guid.NewGuid(); string? docId = null; var count = 0;
         var gateway = Gateway(async request =>
         {
-            count++; Assert.Equal("Bearer test-service-token", request.Headers.Authorization!.ToString());
             var path = request.RequestUri!.AbsolutePath;
+            if (path == "/api/v1/sofia/perguntar") return Json(new RespostaSofia(Guid.NewGuid(), "Síntese", "Resposta consolidada", [], [], 1, 2, 3, 50));
+            count++; Assert.Equal("Bearer test-service-token", request.Headers.Authorization!.ToString());
             if (path == "/api/v1/agentes") return Json(new { items = new[] { new AgenteDisponivel("fiscal", "Fiscal", ["analisar_documentos"], true, null) } });
             if (request.Method == HttpMethod.Post)
             {
@@ -93,7 +94,7 @@ public sealed class SofiaWebGatewayTests
         var run = new ChatRun("Verifique os documentos", ["a.txt"]);
         var input = new ChatInput("Pessoa", run.Question, [new("a.txt", Encoding.UTF8.GetBytes("Texto integral sintético"))]);
         if (wrongId) { await Assert.ThrowsAsync<SofiaUiException>(() => gateway.SubmitAsync(input, run, () => Task.CompletedTask, default)); Assert.False(run.HasUsableResults); }
-        else { await gateway.SubmitAsync(input, run, () => Task.CompletedTask, default); Assert.Equal("parcial", run.State); Assert.True(run.HasUsableResults); Assert.Equal(2, run.Agents.Count); Assert.Null(run.Answer); }
+        else { await gateway.SubmitAsync(input, run, () => Task.CompletedTask, default); Assert.Equal("parcial", run.State); Assert.True(run.HasUsableResults); Assert.Equal(2, run.Agents.Count); Assert.Equal("Resposta consolidada", run.Answer); }
         Assert.InRange(count, 3, 4);
     }
     [Fact]
@@ -103,6 +104,7 @@ public sealed class SofiaWebGatewayTests
         var gateway = Gateway(async request =>
         {
             var path = request.RequestUri!.AbsolutePath;
+            if (path == "/api/v1/sofia/perguntar") return Json(new RespostaSofia(Guid.NewGuid(), "Síntese", "Resposta ECD consolidada", [], [], 1, 2, 3, 50));
             if (path == "/api/v1/agentes") return Json(new { items = new[] { new AgenteDisponivel("ecd", "Agente ECD", ["analisar_documentos"], true, null, "Carol") } });
             if (request.Method == HttpMethod.Post)
             {

@@ -30,6 +30,7 @@ public sealed class DemoSofiaChat : ISofiaChat
                 run.Answer = "Olá! Sou a **SOFIA**, sua parceira em inteligência fiscal.\n\nEste é o modo de demonstração da interface. Na conexão real, você poderá tirar dúvidas com a SOFIA ou anexar documentos para receber análises dos especialistas.\n\nPara conhecer a apresentação das análises, adicione um PDF ou TXT e envie uma pergunta.";
             }
             run.State = "concluida";
+            if (run.HasUsableResults) await ConsolidateAsync(run, changed, ct);
         }
         catch (OperationCanceledException) { run.State = "cancelada"; }
         finally { run.EndedAt = DateTimeOffset.UtcNow; await changed(); }

@@ -91,7 +91,7 @@ precisar mencionar a especialidade. Consulte a [entrega 008](specs/008-roteament
 | Interface Blazor .NET 10 | Implementada; apresentação, identificação e chat responsivo |
 | Anexos no chat | PDF/TXT/XML enviados à API; delegação opcional |
 | Entrada de voz | Ditado pt-BR, revisão antes do envio e fallback para texto |
-| Resultados na interface | Análises individuais, síntese sob demanda e rastreamento expansível |
+| Resultados na interface | Resposta automática, análises individuais e rastreamento expansível |
 | Perguntas com OpenAI e contexto RAG | Implementada no código |
 | Ingestão textual, chunking e embeddings | Implementada no código |
 | Busca semântica PostgreSQL/PgVector | Implementada; esquema inicializado automaticamente no Docker |
@@ -119,7 +119,7 @@ Navegador → Blazor Interactive Server (SofiaInfis.Web)
   ├─ PDF/TXT/XML → API perguntar → extração + RAG + OpenAI
   ├─ base de conhecimentos → ingestão textual/arquivo → embeddings → PgVector
   ├─ A2A opcional → API orquestrações → especialistas A2A → MongoDB
-  └─ síntese sob demanda → API perguntar → RAG + OpenAI → resposta final
+  └─ síntese automática → API perguntar → RAG + OpenAI → resposta final
 ```
 
 O frontend acompanha resultados pelo servidor, com a credencial fora do navegador.
@@ -310,9 +310,12 @@ As referências normativas são:
 
 Catálogo, descoberta, seleção, cliente A2A, autenticação, timeouts, histórico e
 consulta estão implementados. O módulo A2A disponibiliza análises originais para
-consolidação. No frontend, “Gerar síntese final” aciona o endpoint existente de
+consolidação. No frontend, a síntese automática aciona o endpoint existente de
 perguntas com as análises em TXT; essa operação usa RAG/OpenAI e pode consumir
-tokens. A síntese depende de ação do usuário e não altera os resultados A2A.
+tokens. A síntese não depende de ação do usuário e preserva os resultados A2A.
+Falha, resposta vazia ou limite de síntese produzem uma resposta local com os
+resultados disponíveis e limitações. Sem resultados, a interface explica o
+impedimento e os próximos passos. Consulte a [entrega 009](specs/009-resposta-automatica/spec.md).
 Não há memória conversacional de LLM.
 Agentes reais dos alunos precisam ser cadastrados e validados no ambiente da turma.
 

@@ -67,13 +67,20 @@ Use HTTPS fora do loopback local; redirecionamentos HTTP não são seguidos.
   nome até 200. No fluxo especializado, textos que seriam truncados são **rejeitados** antes
   da delegação, com orientação para dividir o documento. PDF de imagem exige OCR
   externo; este projeto não adiciona OCR.
-- “Gerar síntese final” envia as análises e limitações em um TXT ao endpoint
-  original de perguntas. Isso utiliza RAG/OpenAI e pode consumir tokens reais.
-  O ID da síntese e seus tokens ficam separados do ID da orquestração. As análises
-  individuais permanecem intactas. Limite20.000 caracteres na entrada da síntese;
-  acima disso, a UI preserva e apresenta apenas as contribuições individuais.
-- Cancelamento solicita interrupção à API e distingue confirmação de encerramento
-  apenas da espera. Cada envio tem orçamento de 150 s; síntese até120 s.
+- A resposta da SOFIA é gerada automaticamente após análises utilizáveis, inclusive
+  parciais. Envia as análises e limitações ao endpoint original de perguntas, com
+  RAG/OpenAI e consumo normal de tokens. O ID da resposta fica separado do ID A2A.
+- Timeout, resposta vazia, erro ou mais de 20.000 caracteres na entrada da síntese
+  produzem uma resposta local com as contribuições completas, sem truncamento.
+  As análises individuais e estados de falha/parcialidade permanecem intactos.
+  Se nenhum agente entregar resultado utilizável, tenta a SOFIA com os documentos
+  originais; em nova falha, explica a impossibilidade e os próximos passos.
+- Cancelamento não dispara nova chamada ao modelo. O acompanhamento tem orçamento
+  de 150 s. A síntese/consulta complementar tem prazo independente de 45 s por
+  padrão (`Sofia:SynthesisTimeoutSeconds`, limitado entre 5 e 90 s).
+- O trace começa recolhido; ao terminar, a interface destaca a resposta principal.
+  “Tentar síntese novamente” aparece somente quando há análises utilizáveis e foi
+  necessária a resposta local. Não repete chamadas A2A.
 - Rastreamento mostra etapas observadas pelo cliente, IDs, estados, durações e
   consumo disponível. Não é um visualizador completo de spans OpenTelemetry.
   A API atual não expõe taskId/contextId remotos nessa consulta; não são inventados.

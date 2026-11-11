@@ -25,7 +25,7 @@ Saudação, sugestões, compositor e especialistas disponíveis na demonstraçã
 
 ## Análises e resultado final
 
-Contribuições recolhíveis e síntese separada, apresentada após ação do usuário.
+Contribuições recolhíveis e resposta da SOFIA apresentada automaticamente, inclusive com resultados parciais. Falhas de síntese exibem uma resposta com as informações disponíveis. O trace começa recolhido; as imagens abaixo registram a versão anterior à entrega 009.
 
 ![Análises por agente e síntese](images/sofia/04-analises-e-resultado.png)
 

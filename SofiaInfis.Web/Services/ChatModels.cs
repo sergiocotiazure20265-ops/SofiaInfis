@@ -11,6 +11,7 @@ public sealed class SofiaOptions
     public bool UseSpecialistAgents { get; set; }
     public bool AllowInternalHttp { get; set; }
     public int CatalogTimeoutSeconds { get; set; } = 30;
+    public int SynthesisTimeoutSeconds { get; set; } = 45;
 }
 public sealed record ChatFile(string Name, byte[] Content)
 {
@@ -42,6 +43,7 @@ public sealed class ChatRun(string question, IReadOnlyList<string> files)
     public DateTimeOffset StartedAt { get; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? EndedAt { get; set; }
     public string? Answer { get; set; }
+    public bool AnswerIsFallback { get; set; }
     public string? Error { get; set; }
     public int? Tokens { get; set; }
     public string? SynthesisExecutionId { get; set; }
@@ -49,8 +51,8 @@ public sealed class ChatRun(string question, IReadOnlyList<string> files)
     public List<TraceEntry> Trace { get; } = [];
     public List<AgentView> Agents { get; } = [];
     public bool HasUsableResults => Agents.Any(a => a.Result?.status is "concluido" or "parcial");
-    public bool IsRunning => State is "preparando" or "em_andamento";
-    public string StateLabel => State switch
+    public bool IsRunning => IsSynthesizing || State is "preparando" or "em_andamento";
+    public string StateLabel => IsSynthesizing ? "Preparando resposta da SOFIA" : State switch
     {
         "preparando" => "Preparando sua análise", "em_andamento" => "SOFIA analisando",
         "concluida" => "Análise concluída", "parcial" => "Análise parcialmente concluída",

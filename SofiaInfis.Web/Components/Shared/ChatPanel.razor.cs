@@ -139,7 +139,7 @@ public partial class ChatPanel
         catch (SofiaUiException ex) { run.State = "falhou"; run.Error = ex.Message; }
         catch (OperationCanceledException) { run.State = "acompanhamento_encerrado"; }
         catch { run.State = "falhou"; run.Error = "Não foi possível concluir esta análise. Tente novamente em instantes."; }
-        finally { _busy = false; await Changed(); }
+        finally { AvailableAnswerComposer.EnsureAnswer(run); _busy = false; await Changed(); await ScrollTo(run); }
     }
     private async Task Consolidate(ChatRun run)
     {
@@ -149,7 +149,7 @@ public partial class ChatPanel
         catch (OperationCanceledException) { _notice = "A espera da síntese foi encerrada. As análises dos agentes continuam disponíveis."; }
         catch (SofiaUiException ex) { _notice = ex.Message; }
         catch { _notice = "Não consegui gerar a síntese agora. As análises individuais foram preservadas."; }
-        finally { _busy = false; await Changed(); }
+        finally { AvailableAnswerComposer.EnsureAnswer(run); _busy = false; await Changed(); await ScrollTo(run); }
     }
     private Task Changed() => _disposed ? Task.CompletedTask : InvokeAsync(async () => { StateHasChanged(); if (_module is not null) await _module.InvokeVoidAsync("follow", _scrollArea); });
     private void Stop() => _operation.Cancel();

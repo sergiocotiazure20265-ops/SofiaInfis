@@ -35,6 +35,7 @@ public sealed class AgentTraceRenderingTests
         Assert.Contains("specialist-avatar", html); Assert.Contains("Concluído", decoded); Assert.Contains("Falha", decoded);
         Assert.Contains("1 documento(s)", decoded); Assert.Contains("Especialidade identificada", decoded);
         Assert.DoesNotContain("em_andamento", html);
+        Assert.DoesNotContain("specialist-trace\" open", html);
         var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../.."));
         var css = File.ReadAllText(Path.Combine(root, "SofiaInfis.Web/wwwroot/sofia.css")) + File.ReadAllText(Path.Combine(root, "SofiaInfis.Web/wwwroot/refinements.css"));
         Directory.CreateDirectory(Path.Combine(root, "artifacts/routing-preview"));

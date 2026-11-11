@@ -45,7 +45,7 @@
                             <div class="user-message"><span class="message-author">Você</span><p>@run.Question</p>@if (run.Files.Count > 0) { <div class="message-files">@foreach (var file in run.Files) { <span><UiIcon Name="file" Size="14" /> @file</span> }</div> }</div>
                             <div class="assistant-message"><div class="answer-avatar sofia-avatar"><img src="images/sofia-welcome.png" alt="" /></div><div class="answer-content"><div class="answer-heading"><strong>SOFIA</strong><span>@(run.IsRunning ? "Preparando um olhar mais completo" : "Sua parceira em inteligência fiscal")</span></div>
                                 @if (run.IsRunning) { <div class="working-indicator"><span class="typing-dots"><i></i><i></i><i></i></span>@run.StateLabel</div> }
-                                @if (run.Answer is not null) { <section class="final-answer"><span class="answer-eyebrow"><UiIcon Name="sparkles" Size="15" /> @(run.Agents.Count > 0 ? "SÍNTESE FINAL" : "RESPOSTA DA SOFIA")</span><MarkdownText Text="@run.Answer" /></section> }
+                                @if (run.Answer is not null) { <section class="final-answer"><span class="answer-eyebrow"><UiIcon Name="sparkles" Size="15" /> @(run.AnswerIsFallback ? "RESPOSTA COM AS INFORMAÇÕES DISPONÍVEIS" : "RESPOSTA DA SOFIA")</span><MarkdownText Text="@run.Answer" /></section> }
                                 @if (run.Agents.Count > 0)
                                 {
                                     <div class="agent-results"><div class="results-title"><UiIcon Name="layers" Size="17" /><strong>Olhares dos especialistas</strong><span>@run.Agents.Count(a => a.Result is not null)/@run.Agents.Count</span></div>
@@ -67,7 +67,7 @@
                                     }
                                     </div>
                                 }
-                                @if (!run.IsRunning && run.Answer is null && run.HasUsableResults) { <div class="consolidate-box"><div><strong>@run.StateLabel</strong><p>Reúna as contribuições em uma resposta da SOFIA.</p></div><button class="button button-soft" disabled="@(_busy || VoiceActive)" @onclick="() => Consolidate(run)"><UiIcon Name="sparkles" Size="17" />@(run.IsSynthesizing ? "Preparando síntese…" : "Gerar síntese final")</button></div> }
+                                @if (!run.IsRunning && run.AnswerIsFallback && run.HasUsableResults) { <div class="consolidate-box"><div><strong>@run.StateLabel</strong><p>As contribuições já estão reunidas acima. Você pode tentar novamente a síntese automática.</p></div><button class="button button-soft" disabled="@(_busy || VoiceActive)" @onclick="() => Consolidate(run)"><UiIcon Name="sparkles" Size="17" />@(run.IsSynthesizing ? "Preparando síntese…" : "Tentar síntese novamente")</button></div> }
                                 @if (!run.IsRunning && run.Answer is null && !run.HasUsableResults && run.Error is null) { <p class="inline-warning">@run.StateLabel. Nenhuma análise utilizável foi recebida. Você pode tentar novamente em uma nova mensagem.</p> }
                                 @if (run.Error is not null) { <p class="inline-warning" role="alert"><UiIcon Name="info" Size="16" />@run.Error</p> }
                                 @if (run.Trace.Count > 0 || run.ExecutionId is not null) { <RunTrace Run="run" OnCopy="() => CopyId(run)" /> }
