@@ -49,8 +49,8 @@ Use HTTPS fora do loopback local; redirecionamentos HTTP não são seguidos.
   a API diretamente. A conexão servidor-servidor não exige ampliar CORS.
 - O nome é identificação de contexto, **não autenticação**. Cada circuito possui
   sua conversa transitória, sem URLs públicas de consulta por ID nem armazenamento
-  de nome/documentos no navegador. Um frontend público deve receber a autenticação
-  institucional apropriada; este projeto não cria contas ou SSO.
+  de nome/documentos no navegador. A interface publicada é pública, sem login;
+  a chave de acesso da API permanece no servidor. Este projeto não cria contas ou SSO.
 - Sem documentos: usa o endpoint original `/api/v1/sofia/perguntar`, com RAG/OpenAI.
 - Com documentos e `UseSpecialistAgents=false` (padrão): envia PDF/TXT/XML diretamente
   a `/api/v1/sofia/perguntar`, com extração e RAG/OpenAI na API.

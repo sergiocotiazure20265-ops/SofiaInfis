@@ -40,7 +40,7 @@ public class Program
         }
 
         var app = builder.Build();
-        app.UseDeploymentAccess(includeWeb: true);
+        app.UseDeploymentAccess();
         if (embeddedApi)
         {
             app.UseSwaggerConfig();

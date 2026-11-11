@@ -27,15 +27,16 @@ continua disponível.
   `Host=HOST_NEON;Port=5432;Database=sofia_infis;Username=sofia_app;Password=SENHA;SSL Mode=VerifyFull;GSS Encryption Mode=Disable;Timeout=30;Maximum Pool Size=10`.
   Use o endpoint direto na inicialização/migração. Não inclua o prefixo `psql`.
 - `OpenAI__ApiKey`: segredo de runtime. Nunca incluir em Git, imagem ou frontend.
-- `Deployment__AccessKey`: senha aleatória gerada pelo Render. Usuário HTTP Basic:
-  `sofia`. A senha protege interface, uploads e operações que consomem OpenAI.
-  A chamada interna da Web usa `X-Sofia-Access-Key`; o segredo não integra o HTML.
-- `Deployment__RequireAccessKey=true`: falha fechada se a senha estiver ausente.
+- `Deployment__AccessKey`: chave aleatória gerada pelo Render para proteger a API,
+  Swagger e OpenAPI. A chamada interna da Web usa `X-Sofia-Access-Key`; o segredo
+  não integra o HTML. A interface, uploads pela interface e chat são públicos.
+- `Deployment__RequireAccessKey=true`: a API falha fechada se a chave estiver ausente;
+  páginas, arquivos estáticos, conexão Blazor e health check continuam públicos.
 - `/health`: disponível ao health check do Render, sem acesso à base documental
   ou geração de tokens; verifica a conexão e tabela RAG.
 
-Abra o endereço **HTTPS** do Render. Ao primeiro acesso, informe usuário `sofia`
-e a senha gerada em `Deployment__AccessKey`, obtida no ambiente do serviço.
+Abra o endereço **HTTPS** do Render. A interface não pede usuário ou senha.
+O servidor Blazor mantém as credenciais necessárias para chamar a API.
 
 ## Migração dos conhecimentos existentes
 
@@ -94,8 +95,9 @@ O `render.yaml` conserva os defaults iniciais com agentes desligados para novas
 instalações. A fonte de configuração do serviço existente é seu Environment;
 uma futura migração para Blueprint deve reconciliar essas flags antes do sync.
 
-Para entrar, use `sofia` e copie `Deployment__AccessKey` na seção Environment do
-painel Render. Não compartilhe essa senha em arquivos públicos. Para repetir o
+Para acessar a interface, basta abrir o link, sem login. Para testar a API,
+use `Deployment__AccessKey` da seção Environment do painel Render no cabeçalho
+`X-Sofia-Access-Key`. Não compartilhe essa chave em arquivos públicos. Para repetir o
 teste público (incluindo chamadas OpenAI reais), execute
 `./scripts/Test-SofiaCloud.ps1 -TestOpenAI` e forneça a senha no prompt oculto.
 As evidências e limites estão no relatório de validação da especificação 004.

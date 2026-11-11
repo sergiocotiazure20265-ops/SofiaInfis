@@ -61,9 +61,10 @@ A aplicação foi publicada no Render Free, com Blazor e API no mesmo processo e
 - [Swagger da API](https://sofia-infis.onrender.com/swagger).
 - [Base de conhecimentos](https://sofia-infis.onrender.com/conhecimentos).
 
-O acesso exige usuário `sofia` e a senha de runtime `Deployment__AccessKey`,
-disponível no ambiente do serviço no painel Render. Segredos não são incluídos
-no repositório. O plano gratuito pode hibernar por inatividade; OpenAI continua
+A interface abre diretamente, sem usuário, senha ou popup do navegador. A API
+continua protegida por `Deployment__AccessKey` no cabeçalho `X-Sofia-Access-Key`,
+enviado pelo servidor Blazor. Segredos não são incluídos no repositório.
+O plano gratuito pode hibernar por inatividade; OpenAI continua
 consumindo a chave configurada. Consulte o [guia](docs/DEPLOY_GRATUITO.md) e a
 [validação pública](specs/004-publicacao-gratuita/validation-results.md).
 
