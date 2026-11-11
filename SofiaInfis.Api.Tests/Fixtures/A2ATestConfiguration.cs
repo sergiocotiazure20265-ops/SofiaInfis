@@ -31,6 +31,8 @@ internal sealed class A2ATestConfiguration : IDisposable
             _secrets.Add(secret);
             Settings[prefix + "IdAgente"] = agent.Id;
             Settings[prefix + "ExpectedName"] = agent.Id;
+            Settings[prefix + "RoutingTerms:0"] = "sintéticos";
+            Settings[prefix + "DocumentTerms:0"] = "sintético";
             Settings[prefix + "CardUri"] = new Uri(agent.Origin, "/.well-known/agent-card.json").AbsoluteUri;
             Settings[prefix + "AllowedDestinations:0"] = Settings[prefix + "CardUri"];
             Settings[prefix + "AllowedDestinations:1"] = new Uri(agent.Origin, "/rpc").AbsoluteUri;

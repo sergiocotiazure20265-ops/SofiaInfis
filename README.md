@@ -68,6 +68,22 @@ O plano gratuito pode hibernar por inatividade; OpenAI continua
 consumindo a chave configurada. Consulte o [guia](docs/DEPLOY_GRATUITO.md) e a
 [validação pública](specs/004-publicacao-gratuita/validation-results.md).
 
+## Seleção de especialistas e rastreamento
+
+A SOFIA seleciona agentes pela especialidade da pergunta e pelas assinaturas do
+conteúdo dos arquivos, após validar disponibilidade e permissões A2A. A capacidade
+genérica `analisar_documentos` não envia mais a solicitação a todos. Cada agente
+recebe somente anexos compatíveis; uma pergunta específica sem anexo compatível
+segue como contexto textual identificado. Sem correspondência, a SOFIA usa o RAG.
+
+O catálogo e os resultados exibem nomes em caixa alta, desenvolvedor e avatar de
+iniciais. O rastreamento mostra os agentes realmente chamados, motivo da seleção,
+quantidade de documentos, estado e duração. Novos agentes precisam de perfis
+`RoutingTerms`/`DocumentTerms` revisados e `Developer` no catálogo; extensões como
+PDF/TXT/XML não bastam. O roteamento local usa regras explícitas de domínio, sem
+classificador LLM ou custo adicional de classificação. Perguntas ambíguas podem
+precisar mencionar a especialidade. Consulte a [entrega 008](specs/008-roteamento-especialistas/spec.md).
+
 ## Estado atual
 
 | Capacidade | Estado |

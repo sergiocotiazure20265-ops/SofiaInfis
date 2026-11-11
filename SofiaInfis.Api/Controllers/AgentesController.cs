@@ -12,12 +12,13 @@ namespace SofiaInfis.Api.Controllers;
 [Authorize(Policy = "a2a:agents:read")]
 [ServiceFilter(typeof(A2AEnabledResourceFilter))]
 [ServiceFilter(typeof(A2AExceptionFilter))]
-public sealed class AgentesController(IAgentDiscovery discovery) : ControllerBase
+public sealed class AgentesController(IAgentDiscovery discovery, IAgentRegistry registry) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
         var agents = await discovery.DiscoverAsync(User, cancellationToken);
-        return Ok(new { items = agents.Select(x => new AgenteDisponivel(x.idAgente, x.nome, x.capacidades, x.elegivel, x.motivo)) });
+        return Ok(new { items = agents.Select(x => new AgenteDisponivel(x.idAgente, x.nome, x.capacidades, x.elegivel, x.motivo,
+            registry.Agents.FirstOrDefault(a => a.IdAgente == x.idAgente)?.Developer)) });
     }
 }

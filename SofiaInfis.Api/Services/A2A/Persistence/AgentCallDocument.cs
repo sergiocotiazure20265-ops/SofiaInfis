@@ -8,6 +8,8 @@ public sealed class AgentCallDocument
     [BsonId] public string Id { get; set; } = "";
     public string IdExecucao { get; set; } = "";
     public string IdAgente { get; set; } = "";
+    public string? MotivoSelecao { get; set; }
+    public int? DocumentosEnviados { get; set; }
     public int Ordem { get; set; }
     public string OwnerRunId { get; set; } = "";
     public long Version { get; set; }

@@ -48,31 +48,33 @@ public sealed class LiveSofiaChat(HttpClient http, IOptions<SofiaOptions> option
         deadline.CancelAfter(TimeSpan.FromSeconds(150));
         try
         {
-            if (input.Files.Count == 0 || !settings.UseSpecialistAgents)
+            if (!settings.UseSpecialistAgents)
             {
                 run.Trace.Add(new(DateTimeOffset.UtcNow, "Pergunta enviada à SOFIA", "Consulta à base de conhecimentos e geração da resposta."));
                 run.State = "em_andamento"; await changed();
-                using var form = new MultipartFormDataContent { { new StringContent(input.Question), "pergunta" } };
-                foreach (var file in input.Files)
-                    form.Add(new ByteArrayContent(file.Content), "arquivos", file.Name);
-                var answer = await SendAsync<RespostaSofia>(HttpMethod.Post, "api/v1/sofia/perguntar", form, false, deadline.Token);
+                var answer = await AskOriginalAsync(input, deadline.Token);
                 run.ExecutionId = answer.idExecucao.ToString(); run.Answer = answer.resposta;
                 run.Tokens = answer.tokensTotal; run.State = "concluida";
                 run.Trace.Add(new(DateTimeOffset.UtcNow, "Resposta recebida", $"{answer.duracaoMs} ms · {answer.tokensTotal} tokens de chat"));
                 return;
             }
-            run.Trace.Add(new(DateTimeOffset.UtcNow, "Preparando documentos", "Extração de texto de PDF/TXT/XML.")); await changed();
-            var prepared = await documents.PrepareAsync(input.Files, deadline.Token);
+            run.Trace.Add(new(DateTimeOffset.UtcNow, "Identificando especialistas", "Seleção pela pergunta e pelo conteúdo dos documentos; somente agentes compatíveis recebem a solicitação.")); await changed();
+            var prepared = input.Files.Count > 0 ? await documents.PrepareAsync(input.Files, deadline.Token) :
+                new List<DocumentoEntrada> { new(SofiaInfis.Api.Services.A2A.Domain.AgentRequestRouter.QuestionContextId,
+                    "contexto-pergunta.txt", input.Question, "text/plain") };
             var catalog = await GetAgentsAsync(deadline.Token);
             var names = catalog.ToDictionary(a => a.idAgente, a => a.nome);
-            // Configuration binding appends configured array items to initialized defaults.
-            // Send each capability once; keep API validation strict for malformed callers.
-            var capabilities = settings.Capabilities.Distinct(StringComparer.Ordinal).ToList();
+            var developers = catalog.ToDictionary(a => a.idAgente, a => a.desenvolvedor);
+            // Specialized routing decides the domain. Do not request unrelated monitoring
+            // merely because that permission is configured on the server-side client.
+            var configuredCapabilities = settings.Capabilities.Distinct(StringComparer.Ordinal).ToList();
+            var capabilities = configuredCapabilities.Contains("analisar_documentos")
+                ? new List<string> { "analisar_documentos" } : configuredCapabilities;
             var request = new CriarOrquestracaoRequest(new(input.Name.Trim()), input.Question, prepared, capabilities);
             var accepted = await SendAsync<OrquestracaoAceita>(HttpMethod.Post, "api/v1/orquestracoes", JsonContent.Create(request), true, deadline.Token);
             if (!Guid.TryParse(accepted.idExecucao, out _)) throw new SofiaUiException("A API retornou uma identificação inválida.");
             run.ExecutionId = accepted.idExecucao; run.State = "em_andamento";
-            run.Trace.Add(new(DateTimeOffset.UtcNow, "Execução registrada", $"{prepared.Count} documento(s) convertido(s); acompanhamento dos especialistas iniciado."));
+            run.Trace.Add(new(DateTimeOffset.UtcNow, "Execução registrada", $"{input.Files.Count} anexo(s); avaliando especialidades e disponibilidade."));
             await changed();
             do
             {
@@ -97,11 +99,17 @@ public sealed class LiveSofiaChat(HttpClient http, IOptions<SofiaOptions> option
                             $"api/v1/orquestracoes/{run.ExecutionId}/chamadas/{call.idSolicitacao}/resultado", null, true, deadline.Token);
                         if (result.versaoContrato != "1.0" || result.idExecucao.ToString() != run.ExecutionId || result.idSolicitacao.ToString() != call.idSolicitacao || result.agente.idAgente != call.idAgente)
                             throw new SofiaUiException("A análise recebida não corresponde ao especialista desta execução.");
-                        run.Trace.Add(new(DateTimeOffset.UtcNow, "Análise recebida", result.agente.nome + " · " + call.idSolicitacao));
+                        run.Trace.Add(new(DateTimeOffset.UtcNow, "Análise recebida", result.agente.nome.ToUpperInvariant()));
                     }
                     var view = new AgentView(call.idAgente, result?.agente.nome ?? names.GetValueOrDefault(call.idAgente, call.idAgente),
-                        call.estado, call.duracaoMs, result, call.falhaTecnica?.codigo, call.consumo);
-                    if (previous is not null) run.Agents[run.Agents.IndexOf(previous)] = view; else run.Agents.Add(view);
+                        call.estado, call.duracaoMs, result, call.falhaTecnica?.codigo, call.consumo,
+                        developers.GetValueOrDefault(call.idAgente), call.motivoSelecao, call.documentosEnviados);
+                    if (previous is not null) run.Agents[run.Agents.IndexOf(previous)] = view;
+                    else
+                    {
+                        run.Agents.Add(view);
+                        run.Trace.Add(new(DateTimeOffset.UtcNow, "Especialista selecionado", view.Name.ToUpperInvariant()));
+                    }
                 }
                 run.State = execution.estado;
                 if (execution.capacidadesSemCobertura.Length > 0 && !run.IsRunning)
@@ -111,12 +119,20 @@ public sealed class LiveSofiaChat(HttpClient http, IOptions<SofiaOptions> option
                 if (!run.IsRunning) break;
                 await Task.Delay(750, deadline.Token);
             } while (true);
+            if (run.Agents.Count == 0 && run.Error is null)
+            {
+                run.Trace.Add(new(DateTimeOffset.UtcNow, "Consulta à SOFIA", "Nenhum especialista compatível e disponível. A SOFIA responderá com sua base de conhecimentos; nenhum documento foi enviado a agentes."));
+                run.State = "em_andamento"; await changed();
+                var answer = await AskOriginalAsync(input, deadline.Token);
+                run.Answer = answer.resposta; run.Tokens = answer.tokensTotal;
+                run.SynthesisExecutionId = answer.idExecucao.ToString(); run.State = "concluida";
+            }
             run.Trace.Add(new(DateTimeOffset.UtcNow, run.StateLabel));
         }
         catch (OperationCanceledException)
         {
             run.State = "acompanhamento_encerrado";
-            if (settings.UseSpecialistAgents && input.Files.Count > 0 && run.ExecutionId is not null)
+            if (settings.UseSpecialistAgents && run.ExecutionId is not null)
             {
                 using var cancel = new CancellationTokenSource(TimeSpan.FromSeconds(6));
                 try
@@ -129,6 +145,12 @@ public sealed class LiveSofiaChat(HttpClient http, IOptions<SofiaOptions> option
             run.Trace.Add(new(DateTimeOffset.UtcNow, run.StateLabel));
         }
         finally { run.EndedAt = DateTimeOffset.UtcNow; await changed(); }
+    }
+    private async Task<RespostaSofia> AskOriginalAsync(ChatInput input, CancellationToken ct)
+    {
+        using var form = new MultipartFormDataContent { { new StringContent(input.Question), "pergunta" } };
+        foreach (var file in input.Files) form.Add(new ByteArrayContent(file.Content), "arquivos", file.Name);
+        return await SendAsync<RespostaSofia>(HttpMethod.Post, "api/v1/sofia/perguntar", form, false, ct);
     }
     public async Task ConsolidateAsync(ChatRun run, Func<Task> changed, CancellationToken ct)
     {

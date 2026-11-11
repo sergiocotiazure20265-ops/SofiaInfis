@@ -22,23 +22,27 @@ public sealed class AgentExecutionPipeline(IExecutionRepository repository, IAge
             if (!await repository.UpdateExecutionAsync(execution, execution.Version, ct))
                 throw new A2AException("armazenamento", "EXECUTION_WRITE_CONFLICT", 503);
             var selection = AgentCapabilitySelector.Select(await discovery.DiscoverAsync(work.Caller, ct), work.Request!.capacidades, work.Caller);
-            execution.SemCobertura = selection.Missing;
-            execution.AgentesSelecionados = selection.Agents.Select(x => x.Configuration.IdAgente).ToArray();
+            var routes = AgentRequestRouter.Select(selection.Agents, work.Request);
+            var covered = routes.SelectMany(x => x.Agent.Capabilities).ToHashSet(StringComparer.Ordinal);
+            execution.SemCobertura = work.Request.capacidades.Where(x => !covered.Contains(x)).ToArray();
+            execution.AgentesSelecionados = routes.Select(x => x.Agent.Configuration.IdAgente).ToArray();
             if (!await repository.UpdateExecutionAsync(execution, execution.Version, ct)) throw new A2AException("armazenamento", "EXECUTION_WRITE_CONFLICT", 503);
-            var pending = new List<(AgentDescriptor Agent, AgentCallDocument Call)>();
-            foreach (var agent in selection.Agents)
+            var pending = new List<(AgentRoute Route, AgentCallDocument Call)>();
+            foreach (var route in routes)
             {
                 var call = new AgentCallDocument
                 {
-                    Id = Guid.NewGuid().ToString(), IdExecucao = execution.Id, IdAgente = agent.Configuration.IdAgente,
+                    Id = Guid.NewGuid().ToString(), IdExecucao = execution.Id, IdAgente = route.Agent.Configuration.IdAgente,
+                    MotivoSelecao = route.Reason,
+                    DocumentosEnviados = route.Documents.Count(x => x.idDocumento != AgentRequestRouter.QuestionContextId),
                     Ordem = pending.Count, OwnerRunId = execution.OwnerRunId, CriadoEm = time.GetUtcNow().UtcDateTime,
                     Deadline = execution.Deadline, ExpiresAt = execution.ExpiresAt
                 };
                 await repository.InsertCallAsync(call, ct);
-                pending.Add((agent, call));
+                pending.Add((route, call));
             }
             using var slots = new SemaphoreSlim(options.MaxConcurrentCalls);
-            await Task.WhenAll(pending.Select(x => ExecuteCallAsync(work, x.Agent, x.Call, slots, ct)));
+            await Task.WhenAll(pending.Select(x => ExecuteCallAsync(work, x.Route, x.Call, slots, ct)));
         }
         catch (OperationCanceledException) { }
         catch
@@ -52,7 +56,7 @@ public sealed class AgentExecutionPipeline(IExecutionRepository repository, IAge
             if (!saved) telemetry.Failure("execution", "storage");
         }
     }
-    private async Task ExecuteCallAsync(OrchestrationWork work, AgentDescriptor agent, AgentCallDocument call,
+    private async Task ExecuteCallAsync(OrchestrationWork work, AgentRoute route, AgentCallDocument call,
         SemaphoreSlim slots, CancellationToken ct)
     {
         bool acquired = false;
@@ -67,13 +71,13 @@ public sealed class AgentExecutionPipeline(IExecutionRepository repository, IAge
                 ? call.EnviadoEm.Value.AddSeconds(options.CallTimeoutSeconds) : work.Execution.Deadline;
             call.Estado = ExecutionStates.Running;
             if (!await coordinator.SaveCallAsync(repository, work, call, ct)) throw new A2AException("armazenamento", "CALL_WRITE_CONFLICT", 503);
-            var request = OrchestrationInputValidator.DomainRequest(work.Request!, Guid.Parse(work.Execution.Id), Guid.Parse(call.Id));
-            var remote = await client.AnalyzeAsync(agent, request, async (taskId, contextId, token) =>
+            var request = OrchestrationInputValidator.DomainRequest(work.Request! with { documentos = route.Documents }, Guid.Parse(work.Execution.Id), Guid.Parse(call.Id));
+            var remote = await client.AnalyzeAsync(route.Agent, request, async (taskId, contextId, token) =>
             {
                 call.TaskId = taskId; call.ContextId = contextId;
                 if (!await coordinator.SaveCallAsync(repository, work, call, token)) throw new A2AException("armazenamento", "CALL_WRITE_CONFLICT", 503);
             }, ct);
-            validator.Validate(remote.Json, request, agent);
+            validator.Validate(remote.Json, request, route.Agent);
             call.ResultadoJson = remote.Json; call.Estado = ExecutionStates.Completed;
         }
         catch (OperationCanceledException)
@@ -83,7 +87,7 @@ public sealed class AgentExecutionPipeline(IExecutionRepository repository, IAge
             if (call.TaskId is not null)
             {
                 using var cancel = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
-                await client.TryCancelAsync(agent, call.TaskId, cancel.Token);
+                await client.TryCancelAsync(route.Agent, call.TaskId, cancel.Token);
             }
         }
         catch (A2AException ex) { call.Estado = ExecutionStates.Failed; call.FalhaTecnica = ex.Failure; }

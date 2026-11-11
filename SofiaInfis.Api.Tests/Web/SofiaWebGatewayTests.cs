@@ -12,13 +12,13 @@ namespace SofiaInfis.Api.Tests.Web;
 
 public sealed class SofiaWebGatewayTests
 {
-    private static LiveSofiaChat Gateway(Func<HttpRequestMessage, Task<HttpResponseMessage>> handle) =>
-        new(new HttpClient(new Handler(handle)), Options.Create(new SofiaOptions { UseSpecialistAgents = true, ApiBaseUrl = "https://sofia.example.invalid/", ServiceToken = "test-service-token" }), new(new ExtracaoDocumentoService()));
+    private static LiveSofiaChat Gateway(Func<HttpRequestMessage, Task<HttpResponseMessage>> handle, bool specialists = true) =>
+        new(new HttpClient(new Handler(handle)), Options.Create(new SofiaOptions { UseSpecialistAgents = specialists, ApiBaseUrl = "https://sofia.example.invalid/", ServiceToken = "test-service-token" }), new(new ExtracaoDocumentoService()));
     private static HttpResponseMessage Json(object data) => new(HttpStatusCode.OK) { Content = JsonContent.Create(data) };
     private sealed class Handler(Func<HttpRequestMessage, Task<HttpResponseMessage>> handle) : HttpMessageHandler
     { protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) => handle(request); }
     [Fact]
-    public async Task Configured_capabilities_are_unique_and_preserve_all_authorized_skills_in_request()
+    public async Task Configured_capabilities_are_unique_and_do_not_request_unrelated_monitoring()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -33,10 +33,11 @@ public sealed class SofiaWebGatewayTests
         var gateway = new LiveSofiaChat(new HttpClient(new Handler(async request =>
         {
             if (request.RequestUri!.AbsolutePath == "/api/v1/agentes") return Json(new { items = Array.Empty<AgenteDisponivel>() });
+            if (request.RequestUri!.AbsolutePath == "/api/v1/sofia/perguntar") return Json(new RespostaSofia(Guid.NewGuid(), "Pergunta", "Resposta SOFIA", [], [], 1, 2, 3, 50));
             if (request.Method == HttpMethod.Post)
             {
                 var body = JsonNode.Parse(await request.Content!.ReadAsStringAsync())!;
-                Assert.Equal(new[] { "analisar_documentos", "monitorar_legislacao_tributaria" },
+                Assert.Equal(new[] { "analisar_documentos" },
                     body["capacidades"]!.AsArray().Select(x => x!.GetValue<string>()));
                 Assert.True(body["documentos"]![0]!["textoCompleto"]!.GetValue<bool>());
                 posted = true;
@@ -50,7 +51,7 @@ public sealed class SofiaWebGatewayTests
         Assert.True(posted);
     }
     [Fact]
-    public async Task Question_without_attachments_uses_original_multipart_api_without_service_token()
+    public async Task Question_uses_original_multipart_api_without_service_token_when_specialists_disabled()
     {
         var calls = 0;
         var gateway = Gateway(async request =>
@@ -59,7 +60,7 @@ public sealed class SofiaWebGatewayTests
             Assert.Null(request.Headers.Authorization);
             Assert.Contains("Pergunta sintética", await request.Content!.ReadAsStringAsync());
             return Json(new RespostaSofia(Guid.NewGuid(), "Pergunta sintética", "Resposta real do transporte simulado", [], [], 1, 2, 3, 50));
-        });
+        }, false);
         var run = new ChatRun("Pergunta sintética", []);
         await gateway.SubmitAsync(new("Pessoa", run.Question, []), run, () => Task.CompletedTask, default);
         Assert.Equal("concluida", run.State); Assert.Equal(3, run.Tokens); Assert.Contains("Resposta real", run.Answer); Assert.Empty(run.Agents); Assert.Equal(1, calls);
@@ -94,6 +95,55 @@ public sealed class SofiaWebGatewayTests
         if (wrongId) { await Assert.ThrowsAsync<SofiaUiException>(() => gateway.SubmitAsync(input, run, () => Task.CompletedTask, default)); Assert.False(run.HasUsableResults); }
         else { await gateway.SubmitAsync(input, run, () => Task.CompletedTask, default); Assert.Equal("parcial", run.State); Assert.True(run.HasUsableResults); Assert.Equal(2, run.Agents.Count); Assert.Null(run.Answer); }
         Assert.InRange(count, 3, 4);
+    }
+    [Fact]
+    public async Task Question_without_files_can_call_specialist_and_preserves_identity_and_selection_reason()
+    {
+        var execution = Guid.NewGuid(); var call = Guid.NewGuid();
+        var gateway = Gateway(async request =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path == "/api/v1/agentes") return Json(new { items = new[] { new AgenteDisponivel("ecd", "Agente ECD", ["analisar_documentos"], true, null, "Carol") } });
+            if (request.Method == HttpMethod.Post)
+            {
+                var input = JsonNode.Parse(await request.Content!.ReadAsStringAsync())!;
+                Assert.Equal("Como validar ECD?", input["documentos"]![0]!["texto"]!.GetValue<string>());
+                Assert.Equal("contexto-pergunta.txt", input["documentos"]![0]!["nome"]!.GetValue<string>());
+                return new(HttpStatusCode.Accepted) { Content = JsonContent.Create(new OrquestracaoAceita(execution.ToString(), "em_andamento", DateTime.UtcNow, true, "unused")) };
+            }
+            if (path.EndsWith("/resultado")) return Json(new ResultadoAnaliseSofia("1.0", execution, call, new("ecd", "Agente ECD"), "concluido", "Resposta sintética", []));
+            return Json(new ExecucaoConsulta(execution.ToString(), "concluida", DateTime.UtcNow, DateTime.UtcNow, DateTime.UtcNow.AddDays(1), ["analisar_documentos"], [],
+                new([new(call.ToString(), "ecd", "concluida", "concluido", true, null, null, 80, null, "Especialidade identificada na pergunta.", 0)], null), true));
+        });
+        var run = new ChatRun("Como validar ECD?", []);
+        await gateway.SubmitAsync(new("Pessoa", run.Question, []), run, () => Task.CompletedTask, default);
+        var agent = Assert.Single(run.Agents);
+        Assert.Equal("Carol", agent.Developer);
+        Assert.Equal(0, agent.DocumentsSent);
+        Assert.Contains("pergunta", agent.SelectionReason);
+        Assert.True(run.HasUsableResults);
+    }
+    [Fact]
+    public async Task No_selected_agent_falls_back_to_sofia_without_broadcast()
+    {
+        var execution = Guid.NewGuid(); var originalCalled = false;
+        var gateway = Gateway(request =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path == "/api/v1/agentes") return Task.FromResult(Json(new { items = Array.Empty<AgenteDisponivel>() }));
+            if (path == "/api/v1/sofia/perguntar")
+            {
+                originalCalled = true;
+                return Task.FromResult(Json(new RespostaSofia(Guid.NewGuid(), "Pergunta", "Resposta da base", [], [], 1, 2, 3, 50)));
+            }
+            if (request.Method == HttpMethod.Post) return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Accepted) { Content = JsonContent.Create(new OrquestracaoAceita(execution.ToString(), "em_andamento", DateTime.UtcNow, true, "unused")) });
+            return Task.FromResult(Json(new ExecucaoConsulta(execution.ToString(), "falhou", DateTime.UtcNow, DateTime.UtcNow, DateTime.UtcNow.AddDays(1), ["analisar_documentos"], ["analisar_documentos"], new([], null), true)));
+        });
+        var run = new ChatRun("O que é a INFIS?", []);
+        await gateway.SubmitAsync(new("Pessoa", run.Question, []), run, () => Task.CompletedTask, default);
+        Assert.True(originalCalled); Assert.Empty(run.Agents);
+        Assert.Equal("Resposta da base", run.Answer); Assert.Equal("concluida", run.State);
+        Assert.Contains(run.Trace, x => x.Detail?.Contains("nenhum documento foi enviado") == true);
     }
     [Fact]
     public async Task Truncated_documents_are_rejected_instead_of_silently_delegated()

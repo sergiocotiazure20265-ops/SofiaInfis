@@ -51,7 +51,7 @@ public sealed class OrquestracoesController(IOrchestrationService service, IExec
             }
             return new ChamadaResumo(call.Id, call.IdAgente, call.Estado, status, call.ResultadoJson is not null,
                 call.ResultadoJson is null ? null : "/api/v1/orquestracoes/" + execution.Id + "/chamadas/" + call.Id + "/resultado",
-                call.FalhaTecnica, call.DuracaoMs, call.Consumo);
+                call.FalhaTecnica, call.DuracaoMs, call.Consumo, call.MotivoSelecao, call.DocumentosEnviados);
         }).ToArray();
         var next = offset + page.Length < calls.Count ? cursors.Encode(execution.OwnerClientId, execution.Id, offset + page.Length) : null;
         return Ok(new ExecucaoConsulta(execution.Id, execution.Estado, execution.CriadoEm, execution.EncerradoEm,

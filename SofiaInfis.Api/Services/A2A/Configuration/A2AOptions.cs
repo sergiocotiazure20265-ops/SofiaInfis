@@ -24,6 +24,9 @@ public sealed class AgentOptions
 {
     public string IdAgente { get; set; } = "";
     public string ExpectedName { get; set; } = "";
+    public string? Developer { get; set; }
+    public string[] RoutingTerms { get; set; } = [];
+    public string[] DocumentTerms { get; set; } = [];
     public string CardUri { get; set; } = "";
     public bool Enabled { get; set; } = true;
     public string[] AllowedDestinations { get; set; } = [];

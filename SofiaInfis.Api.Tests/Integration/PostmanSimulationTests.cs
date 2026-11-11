@@ -10,6 +10,9 @@ public sealed class PostmanSimulationTests(MongoFixture mongo) : IClassFixture<M
 {
     [Fact]
     public async Task Actual_sofia_client_interoperates_with_local_Postman_simulation()
+        => await RunAsync(mongo);
+
+    internal static async Task RunAsync(MongoFixture mongo, Action<IServiceCollection>? configure = null)
     {
         var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../.."));
         using (var port = new TcpListener(IPAddress.Loopback, 5190)) { port.Start(); port.Stop(); }
@@ -37,13 +40,15 @@ public sealed class PostmanSimulationTests(MongoFixture mongo) : IClassFixture<M
             using var config = new A2ATestConfiguration(mongo);
             config.Settings["A2A:Agents:0:IdAgente"] = "postman-fiscal";
             config.Settings["A2A:Agents:0:ExpectedName"] = "postman-fiscal";
+            config.Settings["A2A:Agents:0:RoutingTerms:0"] = "sintéticos";
+            config.Settings["A2A:Agents:0:DocumentTerms:0"] = "sintético";
             config.Settings["A2A:Agents:0:CardUri"] = "http://127.0.0.1:5190/fiscal/.well-known/agent-card.json";
             config.Settings["A2A:Agents:0:AllowedDestinations:0"] = config.Settings["A2A:Agents:0:CardUri"];
             config.Settings["A2A:Agents:0:AllowedDestinations:1"] = "http://127.0.0.1:5190/fiscal/rpc";
             config.Settings["A2A:Agents:0:AllowedAddresses:0"] = "127.0.0.1";
             config.Settings["A2A:Agents:0:AllowedCapabilities:0"] = "analisar_documentos";
             config.Settings["A2A:Agents:0:CredentialRef"] = credentialRef;
-            await using var factory = new SofiaApiFactory(config.Settings);
+            await using var factory = new SofiaApiFactory(config.Settings, configure);
             using var client = config.Client(factory);
             var id = await PartialOrchestrationTests.Start(client);
             using var scope = factory.Services.CreateScope();

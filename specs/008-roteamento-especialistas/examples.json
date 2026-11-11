@@ -1,0 +1,12 @@
+{
+  "pergunta": "Analise os documentos anexados",
+  "documentos": [
+    { "idDocumento": "nfse-1", "nome": "nota.xml", "texto": "<CompNfse><Nfse/></CompNfse>" },
+    { "idDocumento": "ecd-1", "nome": "livro.txt", "texto": "|0000|LECD|2026|\n|I010|G|" }
+  ],
+  "rotasEsperadas": [
+    { "idAgente": "nfse-validador", "desenvolvedor": "Marcos", "idDocumentos": ["nfse-1"] },
+    { "idAgente": "agente-validacao-ecd", "desenvolvedor": "Carol", "idDocumentos": ["ecd-1"] }
+  ],
+  "observacao": "Exemplo de decisão local, não é um novo envelope A2A. message/send continua carregando SolicitacaoAnaliseSofia 1.0 em TextPart."
+}

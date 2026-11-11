@@ -13,7 +13,7 @@
         <div class="sidebar-agents"><span class="sidebar-label">INTELIGÊNCIA EM CONJUNTO</span>
         @if (_catalog.Count > 0)
         {
-            @foreach (var agent in _catalog) { <div class="catalog-agent"><span class="agent-mini"><UiIcon Name="layers" Size="15" /></span><span>@agent.nome</span><span class="availability @(agent.elegivel ? "available" : "")" title="@(agent.elegivel ? "Disponível para análise" : "Indisponível")"></span></div> }
+            @foreach (var agent in _catalog) { <div class="catalog-agent"><AgentIdentity Name="@agent.nome" Developer="@agent.desenvolvedor" /><span class="availability @(agent.elegivel ? "available" : "")" title="@(agent.elegivel ? "Disponível para análise" : "Indisponível")"></span></div> }
         }
         else { <p class="sidebar-empty">SOFIA consulta sua base de conhecimentos<br />e analisa os documentos enviados.</p> }
         </div>
@@ -51,7 +51,7 @@
                                     <div class="agent-results"><div class="results-title"><UiIcon Name="layers" Size="17" /><strong>Olhares dos especialistas</strong><span>@run.Agents.Count(a => a.Result is not null)/@run.Agents.Count</span></div>
                                     @foreach (var agent in run.Agents)
                                     {
-                                        <details class="agent-result" @key="agent.Id"><summary><span class="agent-result-icon"><UiIcon Name="layers" Size="18" /></span><strong>@agent.Name</strong><span class="result-status @(agent.Error is not null || agent.Result?.status == "erro" ? "status-warning" : "")">@AgentStatus(agent)</span><UiIcon Name="chevron" Size="17" /></summary>
+                                        <details class="agent-result" @key="agent.Id"><summary><AgentIdentity Name="@agent.Name" Developer="@agent.Developer" /><span class="result-status @(agent.Error is not null || agent.Result?.status == "erro" ? "status-warning" : "")">@AgentStatus(agent)</span><UiIcon Name="chevron" Size="17" /></summary>
                                             <div class="agent-result-body">
                                                 @if (agent.Result is not null)
                                                 {

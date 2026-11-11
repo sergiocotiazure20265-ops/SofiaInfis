@@ -27,7 +27,23 @@
           "analisar_documentos"
         ],
         "CredentialRef": "SOFIA_A2A_TOKEN",
-        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN",
+        "Developer": "Marcos",
+        "RoutingTerms": [
+          "nfs-e",
+          "nfse",
+          "nota fiscal de servico",
+          "nota fiscal de servicos",
+          "iss",
+          "issqn"
+        ],
+        "DocumentTerms": [
+          "nfse",
+          "nfs-e",
+          "compnfse",
+          "infnfse",
+          "declaracao prestacao servico"
+        ]
       },
       {
         "IdAgente": "agente-validacao-ecd",
@@ -59,7 +75,23 @@
           "analisar_documentos"
         ],
         "CredentialRef": "SOFIA_A2A_TOKEN",
-        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN",
+        "Developer": "Carol",
+        "RoutingTerms": [
+          "ecd",
+          "escrituracao contabil digital",
+          "livro diario",
+          "livro razao"
+        ],
+        "DocumentTerms": [
+          "ecd",
+          "escrituracao contabil digital",
+          "lecd",
+          "i010",
+          "i050",
+          "i200",
+          "j100"
+        ]
       },
       {
         "IdAgente": "agente-parecer-tributario",
@@ -87,7 +119,20 @@
           "analisar_documentos"
         ],
         "CredentialRef": "SOFIA_A2A_TOKEN",
-        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN",
+        "Developer": "Roberto Rabelo",
+        "RoutingTerms": [
+          "parecer tributario",
+          "parecer fiscal",
+          "consulta tributaria",
+          "interpretacao tributaria",
+          "regime tributario",
+          "planejamento tributario"
+        ],
+        "DocumentTerms": [
+          "parecer tributario",
+          "consulta tributaria"
+        ]
       },
       {
         "IdAgente": "agente-ecf",
@@ -111,7 +156,26 @@
           "analisar_documentos"
         ],
         "CredentialRef": "SOFIA_A2A_TOKEN",
-        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN",
+        "Developer": "Kaio Macedo",
+        "RoutingTerms": [
+          "ecf",
+          "escrituracao contabil fiscal",
+          "lalur",
+          "lacs",
+          "irpj",
+          "csll"
+        ],
+        "DocumentTerms": [
+          "ecf",
+          "escrituracao contabil fiscal",
+          "lecf",
+          "lalur",
+          "lacs",
+          "m300",
+          "m350",
+          "n630"
+        ]
       },
       {
         "IdAgente": "agente-fiscal",
@@ -139,7 +203,21 @@
           "analisar_documentos"
         ],
         "CredentialRef": "SOFIA_A2A_TOKEN",
-        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN",
+        "Developer": "Marcus Oliveira",
+        "RoutingTerms": [
+          "classificacao fiscal",
+          "ncm",
+          "cest",
+          "cfop",
+          "classificar mercadoria",
+          "classificar produto"
+        ],
+        "DocumentTerms": [
+          "classificacao fiscal",
+          "tabela ncm",
+          "tabela cest"
+        ]
       },
       {
         "IdAgente": "agente-auditoria-nfe",
@@ -165,7 +243,22 @@
           "analisar_documentos"
         ],
         "CredentialRef": "SOFIA_A2A_TOKEN",
-        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN",
+        "Developer": "Andressa",
+        "RoutingTerms": [
+          "nf-e",
+          "nfe",
+          "nota fiscal eletronica",
+          "danfe",
+          "auditoria de notas"
+        ],
+        "DocumentTerms": [
+          "nfe",
+          "nf-e",
+          "nfeproc",
+          "infnfe",
+          "danfe"
+        ]
       },
       {
         "IdAgente": "agente-dimp",
@@ -195,7 +288,18 @@
           "analisar_documentos"
         ],
         "CredentialRef": "SOFIA_A2A_TOKEN",
-        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN",
+        "Developer": "Matheus do Valle",
+        "RoutingTerms": [
+          "dimp",
+          "meios de pagamento",
+          "transacoes com cartao",
+          "declaracao de informacoes de meios de pagamentos"
+        ],
+        "DocumentTerms": [
+          "dimp",
+          "declaracao de informacoes de meios de pagamentos"
+        ]
       },
       {
         "IdAgente": "agente-monitoramento-legislacao",
@@ -222,7 +326,24 @@
           "monitorar_legislacao_tributaria"
         ],
         "CredentialRef": "SOFIA_A2A_TOKEN",
-        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN"
+        "DiscoveryCredentialRef": "SOFIA_A2A_TOKEN",
+        "Developer": "Lettícia Luize",
+        "RoutingTerms": [
+          "legislacao",
+          "jurisprudencia",
+          "mudanca legislativa",
+          "alteracao legislativa",
+          "novas leis",
+          "novas normas",
+          "monitoramento tributario",
+          "decisao judicial"
+        ],
+        "DocumentTerms": [
+          "jurisprudencia",
+          "diario oficial",
+          "ementa",
+          "acordao"
+        ]
       }
     ]
   }

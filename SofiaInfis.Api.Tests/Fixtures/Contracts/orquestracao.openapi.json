@@ -758,6 +758,21 @@
                 "type": "null"
               }
             ]
+          },
+          "motivoSelecao": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Justificativa da seleção sem trechos documentais."
+          },
+          "documentosEnviados": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "Quantidade de anexos enviados; zero indica somente contexto textual da pergunta."
           }
         },
         "additionalProperties": true
@@ -910,6 +925,13 @@
               "string",
               "null"
             ]
+          },
+          "desenvolvedor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Autoria pública revisada do agente."
           }
         },
         "additionalProperties": true

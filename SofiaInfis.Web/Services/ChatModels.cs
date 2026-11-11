@@ -20,7 +20,18 @@ public sealed record ChatInput(string Name, string Question, IReadOnlyList<ChatF
 public sealed record TraceEntry(DateTimeOffset At, string Title, string? Detail = null);
 public sealed record AgentView(string Id, string Name, string State, long? DurationMs,
     ResultadoAnaliseSofia? Result = null, string? Error = null,
-    SofiaInfis.Api.Services.A2A.Persistence.ConsumoInformado? Consumption = null);
+    SofiaInfis.Api.Services.A2A.Persistence.ConsumoInformado? Consumption = null,
+    string? Developer = null, string? SelectionReason = null, int? DocumentsSent = null)
+{
+    public string StatusLabel => State switch
+    {
+        "aguardando" => "Na fila", "em_andamento" => "Analisando", "concluida" => "Concluído",
+        "falhou" => "Falha", "timeout" => "Tempo esgotado", "cancelada" => "Cancelado",
+        "interrompida" => "Interrompido", _ => "Preparando"
+    };
+    public string StatusTone => Error is not null || Result?.status == "erro" ? "warning" :
+        State == "concluida" ? "success" : State is "aguardando" or "em_andamento" ? "active" : "warning";
+}
 public sealed class ChatRun(string question, IReadOnlyList<string> files)
 {
     public Guid LocalId { get; } = Guid.NewGuid();

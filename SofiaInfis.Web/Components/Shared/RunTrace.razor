@@ -1,8 +1,33 @@
-<details class="trace-panel"><summary><UiIcon Name="trace" Size="16" /><span>Rastreamento da análise</span>@if (!Run.IsRunning) { <small>@Run.StateLabel</small> }<UiIcon Name="chevron" Size="15" /></summary><div class="trace-content">
-    @if (Run.ExecutionId is not null) { <div class="execution-id"><span>Execução</span><code>@Run.ExecutionId</code><button class="icon-button" aria-label="Copiar identificador da execução" @onclick="OnCopy"><UiIcon Name="copy" Size="15" /></button></div> }
-    <ol>@foreach (var step in Run.Trace) { <li><UiIcon Name="check" Size="13" /><div><strong>@step.Title</strong>@if (step.Detail is not null) { <p>@step.Detail</p> }</div><time>@step.At.ToLocalTime().ToString("HH:mm:ss")</time></li> }</ol>
-    @foreach (var agent in Run.Agents) { <div class="trace-agent"><strong>@agent.Name</strong><span>@agent.State · @(agent.DurationMs is null ? "Duração não informada" : $"{agent.DurationMs} ms")</span>@if (agent.Result is not null) { <code>@agent.Result.idSolicitacao</code> }@if (agent.Error is not null) { <code>@agent.Error</code> }<span>@(agent.Consumption?.tokensTotal is { } tokens ? $"{tokens} tokens remotos informados" : "Tokens remotos não informados")</span></div> }
-    @if (Run.SynthesisExecutionId is not null) { <p class="subtle-caption">Execução da síntese: <code>@Run.SynthesisExecutionId</code></p> }
-    <p class="trace-meta">@(Run.Tokens is null ? "Consumo de tokens não informado." : $"{Run.Tokens} tokens de chat na resposta da SOFIA.") As análises originais dos agentes são preservadas.</p>
-</div></details>
+<details class="trace-panel specialist-trace" open>
+    <summary><UiIcon Name="trace" Size="16" /><span>Agentes e rastreamento</span><small>@Run.Agents.Count especialista(s) chamado(s)</small><UiIcon Name="chevron" Size="15" /></summary>
+    <div class="trace-content">
+        <div class="trace-overview"><div><span class="trace-kicker">ORQUESTRAÇÃO SOFIA</span><strong>@Run.StateLabel</strong></div><span class="trace-selection-note">Seleção por especialidade</span></div>
+        @if (Run.Agents.Count > 0)
+        {
+            <div class="trace-agent-grid">
+                @foreach (var agent in Run.Agents)
+                {
+                    <article class="specialist-call" @key="agent.Id">
+                        <header><AgentIdentity Name="@agent.Name" Developer="@agent.Developer" /><span class="specialist-status @agent.StatusTone"><i></i>@agent.StatusLabel</span></header>
+                        <p class="selection-reason">@(agent.SelectionReason ?? "Especialista registrado nesta execução.")</p>
+                        <div class="call-metrics"><span><UiIcon Name="file" Size="14" />@(agent.DocumentsSent is null ? "Documentos não informados" : agent.DocumentsSent == 0 ? "Contexto da pergunta" : $"{agent.DocumentsSent} documento(s)")</span><span>@(agent.DurationMs is null ? "Em acompanhamento" : $"{agent.DurationMs:N0} ms")</span></div>
+                        @if (agent.Error is not null) { <p class="call-error">O especialista não concluiu a análise. As demais contribuições foram preservadas.</p> }
+                        <details class="call-technical"><summary>Detalhes da chamada</summary>
+                            @if (agent.Result is not null) { <code>@agent.Result.idSolicitacao</code> }
+                            @if (agent.Error is not null) { <code>@agent.Error</code> }
+                            <span>@(agent.Consumption?.tokensTotal is { } tokens ? $"{tokens} tokens remotos informados" : "Tokens remotos não informados")</span>
+                        </details>
+                    </article>
+                }
+            </div>
+        }
+        else { <p class="trace-empty">@(Run.IsRunning ? "Avaliando a pergunta, os documentos e as especialidades disponíveis…" : "Nenhum especialista foi chamado nesta solicitação.")</p> }
+        <details class="trace-timeline"><summary>Etapas da análise <span>@Run.Trace.Count registros</span></summary>
+            <ol>@foreach (var step in Run.Trace) { <li><UiIcon Name="check" Size="13" /><div><strong>@step.Title</strong>@if (step.Detail is not null) { <p>@step.Detail</p> }</div><time>@step.At.ToLocalTime().ToString("HH:mm:ss")</time></li> }</ol>
+        </details>
+        @if (Run.ExecutionId is not null) { <div class="execution-id"><span>Execução</span><code>@Run.ExecutionId</code><button class="icon-button" aria-label="Copiar identificador da execução" @onclick="OnCopy"><UiIcon Name="copy" Size="15" /></button></div> }
+        @if (Run.SynthesisExecutionId is not null) { <p class="subtle-caption">Resposta da SOFIA: <code>@Run.SynthesisExecutionId</code></p> }
+        <p class="trace-meta">@(Run.Tokens is null ? "Consumo de tokens de chat não informado." : $"{Run.Tokens} tokens de chat na resposta da SOFIA.") As análises originais dos agentes são preservadas.</p>
+    </div>
+</details>
 @code { [Parameter, EditorRequired] public ChatRun Run { get; set; } = null!; [Parameter] public EventCallback OnCopy { get; set; } }

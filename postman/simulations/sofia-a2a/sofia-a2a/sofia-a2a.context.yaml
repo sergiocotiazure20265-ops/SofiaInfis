@@ -70,6 +70,14 @@ assumptions:
     source: "specs/001-integracao-a2a/contracts/README.md; specs/001-integracao-a2a/validation-results.md"
     updated_at: "2026-11-05"
 
+  - id: selective-routing-wire-compatible
+    status: supported
+    claim: "O cliente A2A continua compatível com o especialista sintético após seleção local por perfil de especialidade."
+    reason: "SelectiveRoutingTests executou a API, workers, descoberta e transporte reais contra a simulação Postman local, com repositório em memória."
+    verification: "2026-11-11: 70 testes aprovados incluindo Postman e dois agentes HTTP simulados. Mongo não foi revalidado: Docker Desktop não iniciou. O perfil sintético foi configurado explicitamente para os documentos de teste."
+    source: "SofiaInfis.Api.Tests/Integration/SelectiveRoutingTests.cs; SofiaInfis.Api.Tests/Integration/PostmanSimulationTests.cs"
+    updated_at: "2026-11-11"
+
 # What the claims above were written against: { id, date, commit, cli }, from
 # `git rev-parse HEAD` and `postman --version`. Append an entry when either
 # differs, and say so when the tree is dirty — a sha alone reads as a clean
@@ -84,4 +92,9 @@ fingerprints:
   - id: local-rag-integration-003
     date: "2026-11-09"
     commit: "4ad9aa8 (working tree modificado; integração RAG não commitada)"
+    cli: "1.86.0"
+
+  - id: selective-routing-008
+    date: "2026-11-11"
+    commit: "00db357 (working tree modificado; roteamento e trace ainda não commitados)"
     cli: "1.86.0"

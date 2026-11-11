@@ -51,11 +51,13 @@ Use HTTPS fora do loopback local; redirecionamentos HTTP não são seguidos.
   sua conversa transitória, sem URLs públicas de consulta por ID nem armazenamento
   de nome/documentos no navegador. A interface publicada é pública, sem login;
   a chave de acesso da API permanece no servidor. Este projeto não cria contas ou SSO.
-- Sem documentos: usa o endpoint original `/api/v1/sofia/perguntar`, com RAG/OpenAI.
+- Com especialistas habilitados: seleciona por pergunta/conteúdo; cada agente recebe
+  somente anexos compatíveis ou contexto textual da pergunta. Sem correspondência,
+  usa `/api/v1/sofia/perguntar`, com RAG/OpenAI.
 - Com documentos e `UseSpecialistAgents=false` (padrão): envia PDF/TXT/XML diretamente
   a `/api/v1/sofia/perguntar`, com extração e RAG/OpenAI na API.
 - `/conhecimentos`: registra texto ou PDF/TXT/XML na base persistente.
-- Com documentos e `UseSpecialistAgents=true`: extrai texto e envia a
+- Com `UseSpecialistAgents=true`: extrai texto quando há anexos e envia a
   `/api/v1/orquestracoes`, acompanha a execução e consulta resultados por chamada.
   O frontend nunca chama os agentes diretamente nem muda o wire A2A.
 - Também é possível anexar arquivos sem escrever: ao clicar em Enviar, a interface

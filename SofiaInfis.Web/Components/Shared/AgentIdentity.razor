@@ -1,0 +1,9 @@
+<span class="specialist-avatar" aria-hidden="true">@Initials</span>
+<span class="specialist-identity"><strong>@Name.ToUpperInvariant()</strong><small>Desenvolvido por @(string.IsNullOrWhiteSpace(Developer) ? "autoria não informada" : Developer)</small></span>
+@code {
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+    [Parameter] public string? Developer { get; set; }
+    private string Initials => string.Concat(Name.Split([' ', '-', '_'], StringSplitOptions.RemoveEmptyEntries)
+        .Where(x => !new[] { "agente", "de", "da", "do", "infis" }.Contains(x.ToLowerInvariant()))
+        .Take(2).Select(x => x[0])).ToUpperInvariant() is { Length: > 0 } value ? value : "IA";
+}

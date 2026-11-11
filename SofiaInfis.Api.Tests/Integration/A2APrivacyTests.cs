@@ -21,6 +21,7 @@ public sealed class A2APrivacyTests(MongoFixture mongo) : IClassFixture<MongoFix
         System.Diagnostics.ActivitySource.AddActivityListener(listener);
         await using var agent = await A2AAgentServer.StartAsync();
         using var configuration = new A2ATestConfiguration(mongo, agent);
+        configuration.Settings["A2A:Agents:0:DocumentTerms:1"] = "document sentinel";
         var logs = new CapturedLogs();
         await using var factory = new SofiaApiFactory(configuration.Settings, services => services.AddSingleton<ILoggerProvider>(logs));
         using var client = configuration.Client(factory);
