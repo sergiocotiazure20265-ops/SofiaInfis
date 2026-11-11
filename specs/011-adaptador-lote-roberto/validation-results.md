@@ -50,4 +50,15 @@ execução restrita encontrou duas falhas de permissões locais (Event Log e run
 Postman); a regressão com acesso ao runtime local passou. Artefatos:
 `lote-release.trx` e `lote-messages.trx` em `artifacts/lote-adapter`.
 
-Republicação do ajuste de mensagem e verificação de disponibilidade: em andamento.
+Republicação concluída: revisão `b96bb3952130caed2b9de81c70a5ce2def14d2f6`,
+deploy `dep-dbqdpr67bikc739t6n8g`, estado `live` em
+2026-11-11T21:24:53Z (18:24:53 de Brasília). Envio confirmado em `origin/main`.
+
+Verificação HTTPS após o deploy: `/health`, `/`, `/conhecimentos`, `/chat.js` e
+`/voice-input.mjs` responderam HTTP 200; Swagger sem credencial respondeu 401,
+conforme esperado. Nenhum log de nível error/fatal retornado na janela consultada
+de 21:24:53 a 21:25:21 UTC. Evidência: `release-http.json` no diretório local de
+artefatos. O navegador integrado não conseguiu abrir a sessão nesta retomada;
+a checagem desta revisão foi por HTTP, e os cenários de chat acima são da versão
+inicial da entrega 011. A distinção das novas mensagens está coberta pelos testes
+locais; não foi repetida no chat remoto nesta retomada.
