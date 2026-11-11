@@ -8,6 +8,16 @@ namespace SofiaInfis.Api.Tests.Web;
 
 public sealed class AgentTraceRenderingTests
 {
+    [Theory]
+    [InlineData("concluido", "Concluído", "success")]
+    [InlineData("parcial", "Parcial", "warning")]
+    [InlineData("erro", "Erro na análise", "warning")]
+    public void Trace_status_reflects_business_result(string status, string label, string tone)
+    {
+        var result = new SofiaInfis.Api.DTOs.A2A.ResultadoAnaliseSofia("1.0", Guid.NewGuid(), Guid.NewGuid(), new("nfse", "NFS-e"), status, "Teste", []);
+        var agent = new AgentView("nfse", "NFS-e", "concluida", 10, result);
+        Assert.Equal(label, agent.StatusLabel); Assert.Equal(tone, agent.StatusTone);
+    }
     [Fact]
     public async Task Trace_renders_uppercase_identity_developer_avatar_reason_and_friendly_status()
     {

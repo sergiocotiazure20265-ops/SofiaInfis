@@ -23,13 +23,13 @@ public sealed record AgentView(string Id, string Name, string State, long? Durat
     SofiaInfis.Api.Services.A2A.Persistence.ConsumoInformado? Consumption = null,
     string? Developer = null, string? SelectionReason = null, int? DocumentsSent = null)
 {
-    public string StatusLabel => State switch
+    public string StatusLabel => Result?.status == "parcial" ? "Parcial" : Result?.status == "erro" ? "Erro na análise" : State switch
     {
         "aguardando" => "Na fila", "em_andamento" => "Analisando", "concluida" => "Concluído",
         "falhou" => "Falha", "timeout" => "Tempo esgotado", "cancelada" => "Cancelado",
         "interrompida" => "Interrompido", _ => "Preparando"
     };
-    public string StatusTone => Error is not null || Result?.status == "erro" ? "warning" :
+    public string StatusTone => Error is not null || Result?.status is "erro" or "parcial" ? "warning" :
         State == "concluida" ? "success" : State is "aguardando" or "em_andamento" ? "active" : "warning";
 }
 public sealed class ChatRun(string question, IReadOnlyList<string> files)

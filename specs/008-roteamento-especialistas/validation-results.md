@@ -12,4 +12,12 @@ Comando usado: `dotnet test SofiaInfis.Api.Tests --no-restore --filter 'FullyQua
 
 Limites: regras locais explícitas por especialidade, sem classificador LLM; termos ambíguos ou não cadastrados podem resultar em RAG. Novos agentes exigem revisão do perfil. Não há garantia de entendimento semântico de paráfrases ou negações. A qualidade das análises e a disponibilidade de cada agente remoto continuam independentes do roteamento. Docker Desktop não iniciou; a suíte dependente de Mongo/PgVector não foi reexecutada. Não foram enviados documentos reais nem segredos a agentes de teste. Avisos preexistentes NU1902/NU1903 para System.Security.Cryptography.Pkcs 9.0.18 permanecem fora deste escopo.
 
-Publicação e validação do ambiente público: pendentes no momento desta revisão.
+## Publicação e validação pública
+
+Revisão funcional `235c4cc`, deploy `dep-dbqacsp42hec73eo5510`, live em 2026-11-11 17:32:25 UTC no serviço sofia-infis. Entrada no chat HTTPS sem senha, com identificação sintética. Catálogo exibiu os oito agentes com nomes em caixa alta, autorias revisadas e avatars.
+
+- Pergunta sem anexo sobre NFS-e: somente AGENTE VALIDADOR NFS-E / Marcos chamado; zero anexos e contexto da pergunta indicado.
+- Envio conjunto de NFS-e/XML e ECD/TXT fictícios: somente AGENTE VALIDADOR NFS-E / Marcos e AGENTE VALIDAÇÃO ECD / Carol chamados, um documento por agente. Nenhum dos outros seis foi chamado. Ambos retornaram análises válidas com limitações/parcialidade explícitas, esperadas para fixtures mínimas.
+- Nenhum aviso de erro na interface. Logs Render de nível error vazios no período inicial de verificação. Captura sanitizada local em artifacts/routing-preview/live-desktop.png.
+- Conferência pública motivou ajuste adicional do badge para refletir resultado de negócio parcial/erro e quebra de nomes longos no catálogo. Os 28 testes pertinentes de seletor, gateway e renderização passaram após esse ajuste, incluindo três casos novos de estado de negócio. A validação Mongo/PgVector segue pendente pelo bloqueio local do Docker, sem afetar o teste online de uso do Mongo já configurado no serviço.
+
